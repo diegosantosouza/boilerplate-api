@@ -1,0 +1,15 @@
+/dist
+/node_modules
+.env
+/data
+
+# Tests
+/coverage
+.npmrc
+
+# Dev tools
+CLAUDE.md
+.claude
+.clauderc
+
+swagger.json

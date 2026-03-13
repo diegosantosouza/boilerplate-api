@@ -1,0 +1,68 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: mongo-boilerplate
+    ports:
+      - '27017:27017'
+    volumes:
+      - boilerplate-mongo:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=boilerplate-api
+
+  redis:
+    container_name: redis-boilerplate
+    image: 'redis:alpine'
+    volumes:
+      - boilerplate-redis:/data
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  pubsub-emulator:
+    image: gcr.io/google.com/cloudsdktool/cloud-sdk:emulators
+    container_name: pubsub-emulator-boilerplate
+    command: gcloud beta emulators pubsub start --host-port=0.0.0.0:9000
+    ports:
+      - '9000:9000'
+    environment:
+      - PUBSUB_PROJECT_ID=boilerplate-local
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/']
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  pubsub-setup:
+    image: gcr.io/google.com/cloudsdktool/cloud-sdk:emulators
+    container_name: pubsub-setup-boilerplate
+    depends_on:
+      pubsub-emulator:
+        condition: service_healthy
+    environment:
+      - PUBSUB_EMULATOR_HOST=pubsub-emulator-boilerplate:9000
+    command: |
+      sh -c "
+        echo 'Waiting for PubSub Emulator...'
+        echo 'Setting up PubSub via REST API...'
+        echo 'Creating topics...'
+        curl -X PUT http://pubsub-emulator-boilerplate:9000/v1/projects/boilerplate-local/topics/example-sync
+        echo ''
+        echo 'Creating subscriptions...'
+        curl -X PUT http://pubsub-emulator-boilerplate:9000/v1/projects/boilerplate-local/subscriptions/example-sync-sub -H 'Content-Type: application/json' -d '{\"topic\":\"projects/boilerplate-local/topics/example-sync\"}'
+        echo ''
+        echo '========================================='
+        echo 'Development Environment Ready'
+        echo '========================================='
+        echo 'MongoDB:    mongodb://localhost:27017/boilerplate-api'
+        echo 'Redis:      redis://localhost:6379'
+        echo 'PubSub:     http://localhost:9000'
+        echo '========================================='
+      "
+
+volumes:
+  boilerplate-mongo:
+  boilerplate-redis:
