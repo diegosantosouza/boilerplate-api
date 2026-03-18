@@ -1,15 +1,26 @@
+import { CacheProvider } from '@/shared/cache';
 import { ItemCreateUseCase } from '@/modules/items/usecases';
 import { ItemRepository } from '@/modules/items/repositories';
 
 describe('ItemCreateUseCase', () => {
   let usecase: ItemCreateUseCase;
   let mockRepository: jest.Mocked<ItemRepository>;
+  let mockCacheProvider: jest.Mocked<CacheProvider>;
 
   beforeEach(() => {
     mockRepository = {
       create: jest.fn(),
     } as any;
-    usecase = new ItemCreateUseCase(mockRepository);
+    mockCacheProvider = {
+      initialize: jest.fn(),
+      get: jest.fn(),
+      set: jest.fn(),
+      delete: jest.fn(),
+      remember: jest.fn(),
+      refreshNamespaceToken: jest.fn(),
+      getNamespaceToken: jest.fn(),
+    };
+    usecase = new ItemCreateUseCase(mockRepository, mockCacheProvider);
   });
 
   it('should create an item successfully', async () => {
@@ -33,6 +44,7 @@ describe('ItemCreateUseCase', () => {
     const result = await usecase.execute(input);
 
     expect(mockRepository.create).toHaveBeenCalledWith(input);
+    expect(mockCacheProvider.refreshNamespaceToken).toHaveBeenCalledWith('items');
     expect(result).toEqual(expectedOutput);
   });
 
@@ -50,5 +62,6 @@ describe('ItemCreateUseCase', () => {
     await usecase.execute(input);
 
     expect(mockRepository.create).toHaveBeenCalledWith(input);
+    expect(mockCacheProvider.refreshNamespaceToken).toHaveBeenCalledWith('items');
   });
 });

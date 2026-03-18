@@ -1,5 +1,8 @@
 import BaseCron from '../base.cron';
 import Log from '../../shared/logger/log';
+import { makeDispatchExampleSyncUseCase } from '@/modules/example-sync';
+
+const dispatchExampleSyncUseCase = makeDispatchExampleSyncUseCase();
 
 class ExampleSyncCron extends BaseCron {
   protected cronName = 'ExampleSync';
@@ -7,9 +10,11 @@ class ExampleSyncCron extends BaseCron {
   public async handle(): Promise<void> {
     Log.info('Running example sync cron job...');
 
-    // TODO: Implement your cron job logic here
+    const publishedMessages = await dispatchExampleSyncUseCase.execute();
 
-    Log.info('Example sync cron job completed.');
+    Log.info(
+      `Example sync cron job completed. Published ${publishedMessages} messages.`
+    );
   }
 }
 

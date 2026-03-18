@@ -1,11 +1,25 @@
+import { CacheProvider } from '@/shared/cache';
 import { ItemsListInput, ItemsListOutput } from '../dto';
 import { ItemRepository } from '../repositories';
+import {
+  buildItemListCacheKey,
+  ITEMS_CACHE_NAMESPACE,
+} from '../constants/cache';
 
 export class ItemListUseCase {
-  constructor(private readonly itemRepository: ItemRepository) { }
+  constructor(
+    private readonly itemRepository: ItemRepository,
+    private readonly cacheProvider: CacheProvider
+  ) {}
 
   async execute(input: ItemListUseCase.Input): Promise<ItemListUseCase.Output> {
-    return await this.itemRepository.paginate(input);
+    return this.cacheProvider.remember(
+      buildItemListCacheKey(input),
+      () => this.itemRepository.paginate(input),
+      {
+        namespace: ITEMS_CACHE_NAMESPACE,
+      }
+    );
   }
 }
 

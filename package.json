@@ -17,6 +17,10 @@
     "consumer:example-sync:dev": "tsx watch --env-file .env src/consumers/example-sync-consumer/example-sync-consumer.ts",
     "cron:example-sync": "node --trace-deprecation --enable-source-maps dist/crons/example-sync-cron/example-sync-cron.js",
     "cron:example-sync:dev": "tsx watch --env-file .env src/crons/example-sync-cron/example-sync-cron.ts",
+    "worker:example-background-jobs": "node --trace-deprecation --enable-source-maps dist/workers/example-background-jobs/example-background-jobs.worker.js",
+    "worker:example-background-jobs:dev": "tsx watch --env-file .env src/workers/example-background-jobs/example-background-jobs.worker.ts",
+    "scheduler:example-background-jobs": "node --trace-deprecation --enable-source-maps dist/schedulers/example-background-jobs/example-background-jobs.scheduler.js",
+    "scheduler:example-background-jobs:dev": "tsx watch --env-file .env src/schedulers/example-background-jobs/example-background-jobs.scheduler.ts",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write src/**/*.ts",
@@ -58,6 +62,7 @@
   "dependencies": {
     "@google-cloud/pubsub": "^5.2.0",
     "axios": "^1.11.0",
+    "bullmq": "^5.71.0",
     "cors": "^2.8.6",
     "express": "^5.1.0",
     "ioredis": "^5.6.1",

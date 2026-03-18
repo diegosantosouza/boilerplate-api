@@ -1,8 +1,8 @@
 import Log from '@/shared/logger/log';
 import { MongoHelper } from '@/infrastructure/database/mongo-helper';
 import { env } from '@/shared/config/env';
-import { Message } from '@google-cloud/pubsub';
-import { getPubSubClient } from '@/shared/pubsub/gcp-pubsub';
+import { makeMessageBroker } from '@/infrastructure/messaging/message-broker-factory';
+import { BrokerMessage } from '@/shared/messaging';
 
 export interface PubSubMessage {
   data: Buffer;
@@ -48,7 +48,7 @@ export abstract class BaseConsumer {
   }
 
   private static createConsumer(
-    subscriptionName: string,
+    destination: string,
     ConsumerClass: typeof BaseConsumer
   ): void {
     try {
@@ -61,113 +61,88 @@ export abstract class BaseConsumer {
         })
       );
 
-      const pubsub = getPubSubClient();
-
-      if (!subscriptionName) {
-        throw new Error(
-          `Subscription name is required for ${this.consumerName}`
-        );
+      if (!destination) {
+        throw new Error(`Destination is required for ${this.consumerName}`);
       }
 
-      const subscription = pubsub.subscription(subscriptionName, {
-        flowControl: {
-          maxMessages: this.maxMessages,
-          allowExcessMessages: false,
+      const broker = makeMessageBroker();
+
+      void broker.subscribe({
+        destination,
+        maxMessages: this.maxMessages,
+        handler: async (message: BrokerMessage) => {
+          const startTime = Date.now();
+          const messageId = message.id;
+
+          try {
+            Log.info(
+              JSON.stringify({
+                event: `[${this.consumerName}:consumer:start]`,
+                data: {
+                  messageId,
+                  message: 'Starting PubSub message processing',
+                },
+              })
+            );
+
+            await BaseConsumer.ensureMongoConnection();
+
+            const attributes = {
+              ...message.attributes,
+              messageId: messageId,
+            };
+
+            await (ConsumerClass as typeof BaseConsumer).onMessage(
+              message.payload,
+              messageId,
+              attributes
+            );
+
+            message.ack();
+
+            const processingTime = Date.now() - startTime;
+            Log.info(
+              JSON.stringify({
+                event: `[${this.consumerName}:consumer:success]`,
+                data: {
+                  messageId,
+                  processingTimeMs: processingTime,
+                  message: 'Broker message processed successfully',
+                },
+              })
+            );
+          } catch (error) {
+            const processingTime = Date.now() - startTime;
+            Log.error(
+              JSON.stringify({
+                event: `[${this.consumerName}:consumer:error]`,
+                data: {
+                  messageId,
+                  processingTimeMs: processingTime,
+                  error:
+                    error instanceof Error
+                      ? {
+                          message: error.message,
+                          name: error.name,
+                          stack: error.stack,
+                        }
+                      : 'Unknown error',
+                  message: 'Error processing broker message',
+                },
+              })
+            );
+
+            message.nack();
+          }
         },
-      });
-
-      subscription.on('message', async (message: Message) => {
-        const startTime = Date.now();
-        const messageId = message.id;
-
-        try {
-          Log.info(
-            JSON.stringify({
-              event: `[${this.consumerName}:pubsub:start]`,
-              data: {
-                messageId,
-                message: 'Starting PubSub message processing',
-              },
-            })
-          );
-
-          await BaseConsumer.ensureMongoConnection();
-
-          const payload = JSON.parse(message.data.toString());
-          const attributes = {
-            ...message.attributes,
-            messageId: messageId,
-          };
-
-          await (ConsumerClass as typeof BaseConsumer).onMessage(
-            payload,
-            messageId,
-            attributes
-          );
-
-          message.ack();
-
-          const processingTime = Date.now() - startTime;
-          Log.info(
-            JSON.stringify({
-              event: `[${this.consumerName}:pubsub:success]`,
-              data: {
-                messageId,
-                processingTimeMs: processingTime,
-                message: 'PubSub message processed successfully',
-              },
-            })
-          );
-        } catch (error) {
-          const processingTime = Date.now() - startTime;
-          Log.error(
-            JSON.stringify({
-              event: `[${this.consumerName}:pubsub:error]`,
-              data: {
-                messageId,
-                processingTimeMs: processingTime,
-                error:
-                  error instanceof Error
-                    ? {
-                      message: error.message,
-                      name: error.name,
-                      stack: error.stack,
-                    }
-                    : 'Unknown error',
-                message: 'Error processing PubSub message',
-              },
-            })
-          );
-
-          message.nack();
-        }
-      });
-
-      subscription.on('error', (error: Error) => {
-        Log.error(
-          JSON.stringify({
-            event: `[${this.consumerName}:pubsub:subscription_error]`,
-            data: {
-              error:
-                error instanceof Error
-                  ? {
-                    message: error.message,
-                    name: error.name,
-                    stack: error.stack,
-                  }
-                  : 'Unknown error',
-              message: 'PubSub subscription error',
-            },
-          })
-        );
       });
 
       Log.info(
         JSON.stringify({
           event: `[${this.consumerName}:initialization:success]`,
           data: {
-            subscriptionName,
-            message: `${this.consumerName} PubSub consumer initialized`,
+            destination,
+            message: `${this.consumerName} broker consumer initialized`,
           },
         })
       );
@@ -193,14 +168,15 @@ export abstract class BaseConsumer {
   }
 
   public static makeConsumer(
-    envVarName: string
+    envVarName: string,
+    fallbackDestination = ''
   ): void {
-    const subscriptionName = process.env[envVarName] || '';
+    const destination = process.env[envVarName] || fallbackDestination;
 
-    if (!subscriptionName) {
+    if (!destination) {
       throw new Error(`${envVarName} environment variable is required`);
     }
 
-    this.createConsumer(subscriptionName, this as typeof BaseConsumer);
+    this.createConsumer(destination, this as typeof BaseConsumer);
   }
 }

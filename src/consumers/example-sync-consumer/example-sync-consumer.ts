@@ -1,10 +1,12 @@
 import { BaseConsumer } from '../base.consumer';
+import { env } from '@/shared/config/env';
 import Log from '@/shared/logger/log';
+import {
+  ExampleSyncMessage,
+  makeProcessExampleSyncMessageUseCase,
+} from '@/modules/example-sync';
 
-interface ExampleSyncMessage {
-  action: string;
-  data: unknown;
-}
+const processExampleSyncMessageUseCase = makeProcessExampleSyncMessageUseCase();
 
 class ExampleSyncConsumer extends BaseConsumer {
   protected static consumerName = 'ExampleSyncConsumer';
@@ -27,8 +29,11 @@ class ExampleSyncConsumer extends BaseConsumer {
       })
     );
 
-    // TODO: Implement your message processing logic here
+    await processExampleSyncMessageUseCase.execute(messageData);
   }
 }
 
-ExampleSyncConsumer.makeConsumer('EXAMPLE_SYNC_SUBSCRIPTION');
+ExampleSyncConsumer.makeConsumer(
+  'EXAMPLE_SYNC_CONSUMER_DESTINATION',
+  env.example_sync_consumer_destination
+);

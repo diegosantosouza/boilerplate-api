@@ -1,58 +1,134 @@
 import Redis from 'ioredis';
-import { env } from '../config/env';
+import { env } from '@/shared/config/env';
+import Log from '@/shared/logger/log';
+import { NoopCacheProvider } from './noop-cache-provider';
+import { RedisCacheProvider } from './redis-cache-provider';
+
+export interface CacheKeyOptions {
+  namespace?: string;
+}
+
+export interface CacheSetOptions extends CacheKeyOptions {
+  ttlSeconds?: number;
+}
+
+export interface CacheRememberOptions extends CacheSetOptions {}
+
+export interface CacheProvider {
+  initialize(): Promise<void>;
+  get<T>(key: string, options?: CacheKeyOptions): Promise<T | null>;
+  set(key: string, value: unknown, options?: CacheSetOptions): Promise<void>;
+  delete(key: string, options?: CacheKeyOptions): Promise<void>;
+  remember<T>(
+    key: string,
+    resolver: () => Promise<T>,
+    options?: CacheRememberOptions
+  ): Promise<T>;
+  refreshNamespaceToken(namespace: string): Promise<void>;
+  getNamespaceToken(namespace: string): Promise<string>;
+}
+
+class CacheManager implements CacheProvider {
+  private initialized = false;
+  private provider: CacheProvider = new NoopCacheProvider();
+
+  public async initialize(): Promise<void> {
+    if (this.initialized) {
+      return;
+    }
+
+    try {
+      const redisProvider = new RedisCacheProvider(new Redis(env.cache_url), {
+        defaultTtlSeconds: env.cache_default_ttl_seconds,
+        keyPrefix: env.cache_key_prefix,
+      });
+
+      await redisProvider.initialize();
+      this.provider = redisProvider;
+      Log.info(
+        JSON.stringify({
+          event: '[CacheManager:initialize:success]',
+          data: {
+            cacheUrl: env.cache_url,
+            message: 'Redis cache initialized successfully',
+          },
+        })
+      );
+    } catch (error) {
+      Log.warn(
+        JSON.stringify({
+          event: '[CacheManager:initialize:fail_open]',
+          data: {
+            cacheUrl: env.cache_url,
+            error:
+              error instanceof Error
+                ? {
+                    message: error.message,
+                    name: error.name,
+                    stack: error.stack,
+                  }
+                : 'Unknown error',
+            message: 'Redis unavailable, continuing with noop cache provider',
+          },
+        })
+      );
+    } finally {
+      this.initialized = true;
+    }
+  }
+
+  public async get<T>(
+    key: string,
+    options?: CacheKeyOptions
+  ): Promise<T | null> {
+    return this.provider.get<T>(key, options);
+  }
+
+  public async set(
+    key: string,
+    value: unknown,
+    options?: CacheSetOptions
+  ): Promise<void> {
+    return this.provider.set(key, value, options);
+  }
+
+  public async delete(
+    key: string,
+    options?: CacheKeyOptions
+  ): Promise<void> {
+    return this.provider.delete(key, options);
+  }
+
+  public async remember<T>(
+    key: string,
+    resolver: () => Promise<T>,
+    options?: CacheRememberOptions
+  ): Promise<T> {
+    return this.provider.remember<T>(key, resolver, options);
+  }
+
+  public async refreshNamespaceToken(namespace: string): Promise<void> {
+    return this.provider.refreshNamespaceToken(namespace);
+  }
+
+  public async getNamespaceToken(namespace: string): Promise<string> {
+    return this.provider.getNamespaceToken(namespace);
+  }
+}
 
 export class Cache {
-  private static instance: Cache | null = null;
-  private client: Redis;
-  private namespace: string;
+  private static instance: CacheManager = new CacheManager();
 
-  private constructor(client: Redis, namespace: string) {
-    this.client = client;
-    this.namespace = namespace;
+  public static getInstance(): CacheProvider {
+    return this.instance;
   }
 
-  static async getInstance(): Promise<Cache> {
-    if (this.instance) {
-      return this.instance;
-    }
-    try {
-      const client = new Redis(env.cache_url);
-      await client.ping();
-      process.stdout.write('Cache module initialized successfully!\n');
-      this.instance = new Cache(client, 'boilerplate');
-      return this.instance;
-    } catch (error) {
-      process.stderr.write(
-        `Error initializing cache module: ${String(error)}\n`
-      );
-      throw error;
-    }
+  public static async initialize(): Promise<CacheProvider> {
+    await this.instance.initialize();
+    return this.instance;
   }
 
-  private buildKey(key: string): string {
-    return `${this.namespace}:${key}`;
-  }
-
-  async get<T>(key: string): Promise<T | null> {
-    const data = await this.client.get(this.buildKey(key));
-    if (!data) return null;
-    try {
-      return JSON.parse(data) as T;
-    } catch {
-      return null;
-    }
-  }
-
-  async set(key: string, value: unknown, ttl?: number): Promise<void> {
-    const serialized = JSON.stringify(value);
-    if (ttl) {
-      await this.client.set(this.buildKey(key), serialized, 'EX', ttl);
-    } else {
-      await this.client.set(this.buildKey(key), serialized);
-    }
-  }
-
-  async del(key: string): Promise<void> {
-    await this.client.del(this.buildKey(key));
+  public static reset(): void {
+    this.instance = new CacheManager();
   }
 }

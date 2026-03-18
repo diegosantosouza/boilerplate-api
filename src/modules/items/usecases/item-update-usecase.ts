@@ -1,9 +1,14 @@
+import { CacheProvider } from '@/shared/cache';
 import { NotFoundError, ServerError } from '@/shared/errors';
 import { ItemIdInput, ItemUpdateInput, ItemUpdateOutput } from '../dto';
 import { ItemRepository } from '../repositories';
+import { ITEMS_CACHE_NAMESPACE } from '../constants/cache';
 
 export class ItemUpdateUseCase {
-  constructor(private readonly itemRepository: ItemRepository) {}
+  constructor(
+    private readonly itemRepository: ItemRepository,
+    private readonly cacheProvider: CacheProvider
+  ) {}
 
   async execute(
     input: ItemUpdateUseCase.Input
@@ -17,6 +22,8 @@ export class ItemUpdateUseCase {
     if (!item) {
       throw new ServerError('Failed to update item');
     }
+
+    await this.cacheProvider.refreshNamespaceToken(ITEMS_CACHE_NAMESPACE);
     return item;
   }
 }

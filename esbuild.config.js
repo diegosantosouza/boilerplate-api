@@ -79,11 +79,61 @@ async function buildCrons() {
   }
 }
 
+async function buildWorkers() {
+  try {
+    const entryPoints = glob.sync('src/workers/**/*.ts');
+
+    if (entryPoints.length === 0) {
+      console.log('No .ts files found in src/workers/**/*.ts');
+      return;
+    }
+
+    console.log(`Building ${entryPoints.length} worker files...`);
+
+    await esbuild.build({
+      ...baseConfig,
+      entryPoints: entryPoints,
+      outdir: 'dist/workers',
+    });
+
+    console.log('Workers build completed!');
+  } catch (error) {
+    console.error('Workers build failed:', error);
+    throw error;
+  }
+}
+
+async function buildSchedulers() {
+  try {
+    const entryPoints = glob.sync('src/schedulers/**/*.ts');
+
+    if (entryPoints.length === 0) {
+      console.log('No .ts files found in src/schedulers/**/*.ts');
+      return;
+    }
+
+    console.log(`Building ${entryPoints.length} scheduler files...`);
+
+    await esbuild.build({
+      ...baseConfig,
+      entryPoints: entryPoints,
+      outdir: 'dist/schedulers',
+    });
+
+    console.log('Schedulers build completed!');
+  } catch (error) {
+    console.error('Schedulers build failed:', error);
+    throw error;
+  }
+}
+
 async function buildAll() {
   try {
     await buildMain();
     await buildConsumers();
     await buildCrons();
+    await buildWorkers();
+    await buildSchedulers();
     console.log('All builds completed successfully!');
   } catch (error) {
     console.error('Build process failed');

@@ -6,7 +6,7 @@ import { env } from './shared/config/env';
 
 async function startServer() {
   try {
-    await Cache.getInstance();
+    await Cache.initialize();
     await MongoHelper.connect(String(env.mongo_uri), env.mongo_debug);
     app.listen(env.port, () => Log.info(`server running on port ${env.port}`));
   } catch (error) {
