@@ -41,4 +41,14 @@ export const env = {
     process.env.EXAMPLE_EXTERNAL_API_TOKEN ?? '',
   example_external_api_endpoint:
     process.env.EXAMPLE_EXTERNAL_API_ENDPOINT ?? '/resources',
+
+  // Rate limiting
+  rate_limit_global_points: Number(process.env.RATE_LIMIT_GLOBAL_POINTS ?? 200),
+  rate_limit_global_duration: Number(process.env.RATE_LIMIT_GLOBAL_DURATION ?? 60),
+  rate_limit_public_points: Number(process.env.RATE_LIMIT_PUBLIC_POINTS ?? 30),
+  rate_limit_public_duration: Number(process.env.RATE_LIMIT_PUBLIC_DURATION ?? 60),
+  rate_limit_auth_points: Number(process.env.RATE_LIMIT_AUTH_POINTS ?? 60),
+  rate_limit_auth_duration: Number(process.env.RATE_LIMIT_AUTH_DURATION ?? 60),
+  rate_limit_webhook_points: Number(process.env.RATE_LIMIT_WEBHOOK_POINTS ?? 60),
+  rate_limit_webhook_duration: Number(process.env.RATE_LIMIT_WEBHOOK_DURATION ?? 60),
 };
