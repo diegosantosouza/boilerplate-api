@@ -1,8 +1,16 @@
-import axios, { AxiosError } from 'axios';
-import * as https from 'https';
-import { HttpMethodEnum } from './http-method-enum';
-import { Response } from './response';
-import { ResponseInterface } from './response-interface';
+import { Agent, request } from 'undici';
+import type { HttpMethodEnum } from './http-method-enum';
+import { type RawResponse, Response } from './response';
+import type { ResponseInterface } from './response-interface';
+
+let insecureAgent: Agent | undefined;
+
+function getInsecureAgent(): Agent {
+  if (!insecureAgent) {
+    insecureAgent = new Agent({ connect: { rejectUnauthorized: false } });
+  }
+  return insecureAgent;
+}
 
 export class Request {
   private _baseUrl = '';
@@ -40,26 +48,40 @@ export class Request {
 
     while (true) {
       try {
-        const response = await axios.request<T>({
-          method,
-          baseURL: this._baseUrl,
-          url,
-          data,
-          headers: this._headers as any,
-          params: this._params,
-          timeout: this._timeout,
-          httpsAgent: this.makeHttpsAgent(),
-        });
+        const fullUrl = this.buildUrl(url);
+        const headers = { ...this._headers } as Record<string, string>;
 
-        return new Response<T>(response);
-      } catch (error) {
-        const axiosError = error as AxiosError;
-
-        if (axiosError.response) {
-          return new Response<T>(axiosError.response);
+        if (data && !headers['Content-Type']) {
+          headers['Content-Type'] = 'application/json';
         }
 
-        if (attempt >= this._retry || !this.isRetryableError(axiosError)) {
+        const response = await request(fullUrl, {
+          method,
+          headers,
+          body: data ? JSON.stringify(data) : undefined,
+          headersTimeout: this._timeout,
+          bodyTimeout: this._timeout,
+          dispatcher: this.getDispatcher(),
+        });
+
+        const responseData = await response.body.json().catch(() => null);
+
+        const raw: RawResponse = {
+          statusCode: response.statusCode,
+          data: responseData,
+          headers: response.headers as Record<
+            string,
+            string | string[] | undefined
+          >,
+        };
+
+        return new Response<T>(raw);
+      } catch (error) {
+        if (!this.isNetworkError(error)) {
+          throw error;
+        }
+
+        if (attempt >= this._retry) {
           throw error;
         }
 
@@ -68,7 +90,26 @@ export class Request {
     }
   }
 
-  private makeHttpsAgent(): https.Agent | undefined {
+  private buildUrl(url: string): string {
+    const base = this._baseUrl ? `${this._baseUrl}${url}` : url;
+
+    const paramEntries = Object.entries(this._params).filter(
+      ([, v]) => v !== undefined && v !== null
+    );
+
+    if (paramEntries.length === 0) {
+      return base;
+    }
+
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of paramEntries) {
+      searchParams.append(key, String(value));
+    }
+
+    return `${base}?${searchParams.toString()}`;
+  }
+
+  private getDispatcher(): Agent | undefined {
     const shouldValidateSSL =
       process.env.SSL_VALIDATE_CERTIFICATES === 'true' ||
       (process.env.SSL_VALIDATE_CERTIFICATES !== 'false' &&
@@ -78,12 +119,15 @@ export class Request {
       return undefined;
     }
 
-    return new https.Agent({
-      rejectUnauthorized: false,
-    });
+    return getInsecureAgent();
   }
 
-  private isRetryableError(error: AxiosError): boolean {
-    return !error.response;
+  private isNetworkError(error: unknown): boolean {
+    return !(
+      typeof error === 'object' &&
+      error !== null &&
+      'statusCode' in error &&
+      typeof (error as Record<string, unknown>).statusCode === 'number'
+    );
   }
 }

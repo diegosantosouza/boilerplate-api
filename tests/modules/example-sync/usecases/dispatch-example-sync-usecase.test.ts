@@ -1,7 +1,7 @@
 import { DispatchExampleSyncUseCase } from '@/modules/example-sync';
 import { env } from '@/shared/config/env';
-import { ExampleSyncResourceRepository } from '@/shared/repository/example-sync-resource-repository';
-import { MessagePublisher } from '@/shared/messaging';
+import type { MessagePublisher } from '@/shared/messaging';
+import type { ExampleSyncResourceRepository } from '@/shared/repository/example-sync-resource-repository';
 
 describe('DispatchExampleSyncUseCase', () => {
   const originalExampleExternalApiUrl = env.example_external_api_url;
@@ -20,7 +20,10 @@ describe('DispatchExampleSyncUseCase', () => {
       publish: jest.fn().mockResolvedValue({ messageId: 'message-1' }),
     };
 
-    usecase = new DispatchExampleSyncUseCase(resourceRepository, messagePublisher);
+    usecase = new DispatchExampleSyncUseCase(
+      resourceRepository,
+      messagePublisher
+    );
     env.example_sync_destination = 'example-sync';
   });
 

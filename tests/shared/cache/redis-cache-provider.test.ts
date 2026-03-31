@@ -23,7 +23,9 @@ describe('RedisCacheProvider', () => {
       del: jest.fn(),
     };
 
-    mockedRandomUUID.mockReturnValue('token-1234' as `${string}-${string}-${string}-${string}-${string}`);
+    mockedRandomUUID.mockReturnValue(
+      'token-1234' as `${string}-${string}-${string}-${string}-${string}`
+    );
 
     const provider = new RedisCacheProvider(client as any, {
       keyPrefix: 'boilerplate',
@@ -55,7 +57,9 @@ describe('RedisCacheProvider', () => {
       del: jest.fn(),
     };
 
-    mockedRandomUUID.mockReturnValue('token-5678' as `${string}-${string}-${string}-${string}-${string}`);
+    mockedRandomUUID.mockReturnValue(
+      'token-5678' as `${string}-${string}-${string}-${string}-${string}`
+    );
 
     const provider = new RedisCacheProvider(client as any, {
       keyPrefix: 'boilerplate',

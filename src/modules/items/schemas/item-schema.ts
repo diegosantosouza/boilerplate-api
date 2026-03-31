@@ -1,7 +1,7 @@
-import { Document, Schema, model } from 'mongoose';
-import { Item } from '../entities/item';
+import { type Document, model, Schema } from 'mongoose';
 import paginate from 'mongoose-paginate-v2';
-import { PaginateModelInterface } from '@/shared/protocols/paginate-model.interface';
+import type { PaginateModelInterface } from '@/shared/protocols/paginate-model.interface';
+import type { Item } from '../entities/item';
 
 function toJSON(this: any): object {
   const obj = this.toObject({ getters: true, virtuals: true });

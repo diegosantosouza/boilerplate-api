@@ -1,10 +1,17 @@
 import { Queue, QueueEvents } from 'bullmq';
-import { makeBullMqQueueOptions, makeBullMqConnection } from './bullmq-connection';
+import {
+  makeBullMqConnection,
+  makeBullMqQueueOptions,
+} from './bullmq-connection';
 
 const queues = new Map<string, Queue>();
 const queueEventsRegistry = new Map<string, QueueEvents>();
 
-export const getBullMqQueue = <T = unknown, R = unknown, N extends string = string>(
+export const getBullMqQueue = <
+  T = unknown,
+  R = unknown,
+  N extends string = string,
+>(
   queueName: string
 ): Queue<T, R, N> => {
   const existingQueue = queues.get(queueName);

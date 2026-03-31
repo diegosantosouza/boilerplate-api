@@ -1,10 +1,12 @@
-import { CacheProvider } from '@/shared/cache';
-import { ItemsListInput, ItemsListOutput } from '../dto';
-import { ItemRepository } from '../repositories';
+import { ok } from 'neverthrow';
+import type { CacheProvider } from '@/shared/cache';
+import type { DomainResult } from '@/shared/protocols/result';
 import {
   buildItemListCacheKey,
   ITEMS_CACHE_NAMESPACE,
 } from '../constants/cache';
+import type { ItemsListInput, ItemsListOutput } from '../dto';
+import type { ItemRepository } from '../repositories';
 
 export class ItemListUseCase {
   constructor(
@@ -12,14 +14,15 @@ export class ItemListUseCase {
     private readonly cacheProvider: CacheProvider
   ) {}
 
-  async execute(input: ItemListUseCase.Input): Promise<ItemListUseCase.Output> {
-    return this.cacheProvider.remember(
+  async execute(
+    input: ItemListUseCase.Input
+  ): Promise<DomainResult<ItemListUseCase.Output>> {
+    const result = await this.cacheProvider.remember(
       buildItemListCacheKey(input),
       () => this.itemRepository.paginate(input),
-      {
-        namespace: ITEMS_CACHE_NAMESPACE,
-      }
+      { namespace: ITEMS_CACHE_NAMESPACE }
     );
+    return ok(result);
   }
 }
 

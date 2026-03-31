@@ -1,4 +1,7 @@
-import { makeBullMqConnection, makeBullMqDefaultJobOptions } from '@/infrastructure/jobs/bullmq-connection';
+import {
+  makeBullMqConnection,
+  makeBullMqDefaultJobOptions,
+} from '@/infrastructure/jobs/bullmq-connection';
 import { env } from '@/shared/config/env';
 
 describe('bullmq-connection', () => {

@@ -1,8 +1,8 @@
-import { Request } from 'express';
-import { HttpResponse } from '@/shared/protocols/http';
-import { ok } from '@/shared/helpers';
+import type { Request } from 'express';
+import { domainErrorToResponse, ok } from '@/shared/helpers';
+import type { HttpResponse } from '@/shared/protocols/http';
 import { ItemsListInputSchema } from '../dto';
-import { ItemListUseCase } from '../usecases';
+import type { ItemListUseCase } from '../usecases';
 
 export class ItemListHttpController {
   constructor(private readonly itemListUseCase: ItemListUseCase) {}
@@ -11,18 +11,24 @@ export class ItemListHttpController {
     const parsed = ItemsListInputSchema.parse(req.query);
     const result = await this.itemListUseCase.execute(parsed);
 
-    const response = {
-      items: result.docs,
-      limit: result.limit,
-      page: result.page,
-      totalItems: result.totalDocs,
-      totalPages: result.totalPages,
-      nextPage: result.hasNextPage ? (result.page || 1) + 1 : null,
-      prevPage: result.hasPrevPage ? (result.page || 1) - 1 : null,
-      hasNextPage: result.hasNextPage,
-      hasPrevPage: result.hasPrevPage,
-    };
-
-    return ok(response);
+    return result.match(
+      paginateResult =>
+        ok({
+          items: paginateResult.docs,
+          limit: paginateResult.limit,
+          page: paginateResult.page,
+          totalItems: paginateResult.totalDocs,
+          totalPages: paginateResult.totalPages,
+          nextPage: paginateResult.hasNextPage
+            ? (paginateResult.page || 1) + 1
+            : null,
+          prevPage: paginateResult.hasPrevPage
+            ? (paginateResult.page || 1) - 1
+            : null,
+          hasNextPage: paginateResult.hasNextPage,
+          hasPrevPage: paginateResult.hasPrevPage,
+        }),
+      error => domainErrorToResponse(error)
+    );
   }
 }

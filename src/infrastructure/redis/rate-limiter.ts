@@ -1,5 +1,9 @@
 import Redis from 'ioredis';
-import { RateLimiterRedis, RateLimiterMemory, IRateLimiterRes } from 'rate-limiter-flexible';
+import {
+  type IRateLimiterRes,
+  RateLimiterMemory,
+  RateLimiterRedis,
+} from 'rate-limiter-flexible';
 import { env } from '@/shared/config/env';
 import Log from '@/shared/logger/log';
 
@@ -75,7 +79,10 @@ class RateLimiterManager {
       Log.warn(
         JSON.stringify({
           event: '[RateLimiter:initialize:warn]',
-          data: { message: 'Redis unavailable, falling back to in-memory rate limiters' },
+          data: {
+            message:
+              'Redis unavailable, falling back to in-memory rate limiters',
+          },
         })
       );
 

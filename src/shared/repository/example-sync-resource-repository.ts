@@ -1,13 +1,13 @@
-import { ExampleSyncResource } from '@/modules/example-sync/types/example-sync-resource';
+import type { ExampleSyncResource } from '@/modules/example-sync/types/example-sync-resource';
 import { env } from '@/shared/config/env';
-import { ExampleSyncDatasource } from '@/shared/datasources';
+import type { ExampleSyncDatasource } from '@/shared/datasources';
 import { DefaultExternalCrudRepository } from './default-external-crud-repository';
 
-type ListResponse =
-  | Record<string, unknown>
-  | Array<Record<string, unknown>>;
+type ListResponse = Record<string, unknown> | Array<Record<string, unknown>>;
 
-export class ExampleSyncResourceRepository extends DefaultExternalCrudRepository<Record<string, unknown>> {
+export class ExampleSyncResourceRepository extends DefaultExternalCrudRepository<
+  Record<string, unknown>
+> {
   protected dataSource: ExampleSyncDatasource;
   protected endpoint: string;
 

@@ -1,4 +1,4 @@
-import { ResponseInterface } from './response-interface';
+import type { ResponseInterface } from './response-interface';
 
 export class RequestException extends Error {
   public readonly response: ResponseInterface;

@@ -1,7 +1,7 @@
-import { Request } from 'express';
+import type { Request } from 'express';
 import { ok } from '@/shared/helpers';
-import { HttpResponse } from '@/shared/protocols/http';
-import { ListExampleBackgroundJobSchedulersUseCase } from '../usecases';
+import type { HttpResponse } from '@/shared/protocols/http';
+import type { ListExampleBackgroundJobSchedulersUseCase } from '../usecases';
 
 export class ListExampleBackgroundJobSchedulersHttpController {
   constructor(
@@ -9,7 +9,8 @@ export class ListExampleBackgroundJobSchedulersHttpController {
   ) {}
 
   public async handle(_req: Request): Promise<HttpResponse> {
-    const result = await this.listExampleBackgroundJobSchedulersUseCase.execute();
+    const result =
+      await this.listExampleBackgroundJobSchedulersUseCase.execute();
     return ok(result);
   }
 }

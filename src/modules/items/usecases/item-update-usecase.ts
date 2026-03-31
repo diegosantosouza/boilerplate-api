@@ -1,8 +1,11 @@
-import { CacheProvider } from '@/shared/cache';
-import { NotFoundError, ServerError } from '@/shared/errors';
-import { ItemIdInput, ItemUpdateInput, ItemUpdateOutput } from '../dto';
-import { ItemRepository } from '../repositories';
+import { err, ok } from 'neverthrow';
+import type { CacheProvider } from '@/shared/cache';
+import { eventBus } from '@/shared/events';
+import type { DomainResult } from '@/shared/protocols/result';
 import { ITEMS_CACHE_NAMESPACE } from '../constants/cache';
+import type { ItemIdInput, ItemUpdateInput, ItemUpdateOutput } from '../dto';
+import { ItemEvents } from '../events/item-events';
+import type { ItemRepository } from '../repositories';
 
 export class ItemUpdateUseCase {
   constructor(
@@ -12,19 +15,31 @@ export class ItemUpdateUseCase {
 
   async execute(
     input: ItemUpdateUseCase.Input
-  ): Promise<ItemUpdateUseCase.Output> {
+  ): Promise<DomainResult<ItemUpdateUseCase.Output>> {
     const itemExists = await this.itemRepository.findById(input.id);
     if (!itemExists) {
-      throw new NotFoundError('Item not found');
+      return err({
+        type: 'NOT_FOUND',
+        message: 'Item not found',
+        resource: 'Item',
+      });
     }
 
     const item = await this.itemRepository.update(input.id, input);
     if (!item) {
-      throw new ServerError('Failed to update item');
+      return err({
+        type: 'INTERNAL',
+        message: 'Failed to update item',
+      });
     }
 
     await this.cacheProvider.refreshNamespaceToken(ITEMS_CACHE_NAMESPACE);
-    return item;
+    eventBus.publish({
+      name: ItemEvents.UPDATED,
+      payload: item,
+      occurredAt: new Date(),
+    });
+    return ok(item);
   }
 }
 

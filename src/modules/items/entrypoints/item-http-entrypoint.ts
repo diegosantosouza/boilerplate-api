@@ -1,222 +1,131 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { adaptRoute } from '@/shared/adapters';
+import { registry } from '@/shared/config/openapi-registry';
+import { ProblemDetailsSchema } from '@/shared/helpers/problem-details';
+import {
+  ItemCreateInputSchema,
+  ItemIdSchema,
+  ItemListResponseSchema,
+  ItemOutputSchema,
+  ItemUpdateInputSchema,
+} from '../dto';
 import {
   makeItemCreateController,
   makeItemDeleteController,
-  makeItemShowController,
   makeItemListController,
-  makeItemUpdateController
+  makeItemShowController,
+  makeItemUpdateController,
 } from '../factories';
 
-/**
- * @swagger
- * components:
- *   schemas:
- *     Item:
- *       type: object
- *       properties:
- *         id:
- *           type: string
- *           example: "64e88c28184da39eefcf1d5b"
- *         name:
- *           type: string
- *           example: "Example Item"
- *         description:
- *           type: string
- *           example: "A sample item description"
- *         price:
- *           type: number
- *           example: 99.90
- *         active:
- *           type: boolean
- *           example: true
- *         category:
- *           type: string
- *           example: "electronics"
- *         createdAt:
- *           type: string
- *           format: date-time
- *         updatedAt:
- *           type: string
- *           format: date-time
- *     ItemInput:
- *       type: object
- *       required:
- *         - name
- *         - description
- *         - price
- *         - category
- *       properties:
- *         name:
- *           type: string
- *           example: "New Item"
- *         description:
- *           type: string
- *           example: "Item description"
- *         price:
- *           type: number
- *           example: 49.90
- *         active:
- *           type: boolean
- *           default: true
- *         category:
- *           type: string
- *           example: "electronics"
- *     ItemUpdateInput:
- *       type: object
- *       properties:
- *         name:
- *           type: string
- *           example: "Updated Item"
- *         description:
- *           type: string
- *           example: "Updated description"
- *         price:
- *           type: number
- *           example: 59.90
- *         active:
- *           type: boolean
- *         category:
- *           type: string
- *           example: "electronics"
- */
+const ItemListQuerySchema = z.object({
+  page: z.coerce.number().int().optional().openapi({ example: 1 }),
+  limit: z.coerce.number().int().optional().openapi({ example: 10 }),
+  name: z.string().optional(),
+  active: z.boolean().optional(),
+  category: z.string().optional(),
+});
 
-/**
- * @swagger
- * tags:
- *   name: Items
- *   description: Item management endpoints
- */
+registry.registerPath({
+  method: 'get',
+  path: '/items',
+  tags: ['Items'],
+  summary: 'List items',
+  request: {
+    query: ItemListQuerySchema,
+  },
+  responses: {
+    200: {
+      description: 'List of items',
+      content: { 'application/json': { schema: ItemListResponseSchema } },
+    },
+  },
+});
 
-/**
- * @swagger
- * /items:
- *   get:
- *     summary: List items
- *     tags: [Items]
- *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           default: 1
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 10
- *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *       - in: query
- *         name: active
- *         schema:
- *           type: boolean
- *       - in: query
- *         name: category
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: List of items
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 items:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Item'
- *                 totalItems:
- *                   type: integer
- *                 limit:
- *                   type: integer
- *                 page:
- *                   type: integer
- *                 totalPages:
- *                   type: integer
- *   post:
- *     summary: Create a new item
- *     tags: [Items]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/ItemInput'
- *     responses:
- *       201:
- *         description: Item created successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Item'
- *       400:
- *         description: Validation error
- */
+registry.registerPath({
+  method: 'post',
+  path: '/items',
+  tags: ['Items'],
+  summary: 'Create a new item',
+  request: {
+    body: {
+      content: { 'application/json': { schema: ItemCreateInputSchema } },
+    },
+  },
+  responses: {
+    201: {
+      description: 'Item created successfully',
+      content: { 'application/json': { schema: ItemOutputSchema } },
+    },
+    400: {
+      description: 'Validation error',
+      content: { 'application/problem+json': { schema: ProblemDetailsSchema } },
+    },
+  },
+});
 
-/**
- * @swagger
- * /items/{id}:
- *   get:
- *     summary: Get an item by ID
- *     tags: [Items]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Item ID
- *     responses:
- *       200:
- *         description: Item details
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Item'
- *       404:
- *         description: Item not found
- *   patch:
- *     summary: Update an item
- *     tags: [Items]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/ItemUpdateInput'
- *     responses:
- *       200:
- *         description: Item updated
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Item'
- *       404:
- *         description: Item not found
- *   delete:
- *     summary: Delete an item
- *     tags: [Items]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       204:
- *         description: Item deleted successfully
- *       404:
- *         description: Item not found
- */
+registry.registerPath({
+  method: 'get',
+  path: '/items/{id}',
+  tags: ['Items'],
+  summary: 'Get an item by ID',
+  request: {
+    params: ItemIdSchema,
+  },
+  responses: {
+    200: {
+      description: 'Item details',
+      content: { 'application/json': { schema: ItemOutputSchema } },
+    },
+    404: {
+      description: 'Item not found',
+      content: { 'application/problem+json': { schema: ProblemDetailsSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'patch',
+  path: '/items/{id}',
+  tags: ['Items'],
+  summary: 'Update an item',
+  request: {
+    params: ItemIdSchema,
+    body: {
+      content: { 'application/json': { schema: ItemUpdateInputSchema } },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Item updated',
+      content: { 'application/json': { schema: ItemOutputSchema } },
+    },
+    404: {
+      description: 'Item not found',
+      content: { 'application/problem+json': { schema: ProblemDetailsSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'delete',
+  path: '/items/{id}',
+  tags: ['Items'],
+  summary: 'Delete an item',
+  request: {
+    params: ItemIdSchema,
+  },
+  responses: {
+    204: {
+      description: 'Item deleted successfully',
+    },
+    404: {
+      description: 'Item not found',
+      content: { 'application/problem+json': { schema: ProblemDetailsSchema } },
+    },
+  },
+});
+
 export const itemRouter = Router();
 
 itemRouter.get('/', adaptRoute(makeItemListController()));

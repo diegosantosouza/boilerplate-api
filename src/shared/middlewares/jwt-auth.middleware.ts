@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import Log from '@/shared/logger/log';
 
 export interface AuthUser {
@@ -25,7 +25,11 @@ function decodeJwtPayload(token: string): Record<string, any> | null {
   }
 }
 
-export const jwtAuthMiddleware = (req: Request, res: Response, next: NextFunction): void => {
+export const jwtAuthMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

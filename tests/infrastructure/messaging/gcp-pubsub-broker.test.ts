@@ -1,5 +1,5 @@
-import { getGcpPubSubClient } from '@/infrastructure/messaging/gcp/gcp-pubsub-client';
 import { GcpPubSubBroker } from '@/infrastructure/messaging/gcp/gcp-pubsub-broker';
+import { getGcpPubSubClient } from '@/infrastructure/messaging/gcp/gcp-pubsub-client';
 
 jest.mock('@/infrastructure/messaging/gcp/gcp-pubsub-client', () => ({
   getGcpPubSubClient: jest.fn(),

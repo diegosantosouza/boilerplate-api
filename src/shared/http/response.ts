@@ -1,9 +1,14 @@
-import { AxiosResponse } from 'axios';
 import { RequestException } from './request-exception';
-import { ResponseInterface } from './response-interface';
+import type { ResponseInterface } from './response-interface';
+
+export interface RawResponse {
+  statusCode: number;
+  data: unknown;
+  headers: Record<string, string | string[] | undefined>;
+}
 
 export class Response<T = unknown> implements ResponseInterface<T> {
-  constructor(private readonly response: AxiosResponse) {}
+  constructor(private readonly response: RawResponse) {}
 
   public body(): string {
     return JSON.stringify(this.response.data);
@@ -14,11 +19,11 @@ export class Response<T = unknown> implements ResponseInterface<T> {
   }
 
   public status(): number {
-    return this.response.status;
+    return this.response.statusCode;
   }
 
   public ok(): boolean {
-    return this.response.status >= 200 && this.response.status < 300;
+    return this.response.statusCode >= 200 && this.response.statusCode < 300;
   }
 
   public successful(): boolean {
@@ -30,15 +35,16 @@ export class Response<T = unknown> implements ResponseInterface<T> {
   }
 
   public serverError(): boolean {
-    return this.response.status >= 500 && this.response.status < 600;
+    return this.response.statusCode >= 500 && this.response.statusCode < 600;
   }
 
   public clientError(): boolean {
-    return this.response.status >= 400 && this.response.status < 500;
+    return this.response.statusCode >= 400 && this.response.statusCode < 500;
   }
 
   public header(header: string): string | undefined {
-    return this.response.headers[header] as string | undefined;
+    const value = this.response.headers[header];
+    return Array.isArray(value) ? value[0] : (value as string | undefined);
   }
 
   public headers(): object {

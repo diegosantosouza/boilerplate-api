@@ -1,4 +1,4 @@
-import { DataSource } from '@/shared/datasources';
+import type { DataSource } from '@/shared/datasources';
 import { HttpMethodEnum } from '@/shared/http';
 
 type UpdateMethod = HttpMethodEnum.PUT | HttpMethodEnum.PATCH;
@@ -10,7 +10,9 @@ export abstract class DefaultExternalCrudRepository<T> {
   public async find<Y = unknown>(
     query: Record<string, unknown> = {}
   ): Promise<Y> {
-    const response = await this.dataSource.withParams(query).get<Y>(this.endpoint);
+    const response = await this.dataSource
+      .withParams(query)
+      .get<Y>(this.endpoint);
 
     return response.throw().json();
   }

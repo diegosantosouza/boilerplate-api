@@ -1,4 +1,4 @@
-import { ExampleBackgroundJobService } from '../services';
+import type { ExampleBackgroundJobService } from '../services';
 
 export class ListExampleBackgroundJobSchedulersUseCase {
   constructor(

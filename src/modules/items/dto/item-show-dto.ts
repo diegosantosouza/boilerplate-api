@@ -1,5 +1,5 @@
-import { ItemIdInput } from './item-id-dto';
-import { Item } from '../entities';
+import type { Item } from '../entities';
+import type { ItemIdInput } from './item-id-dto';
 
 export type ItemShowOutput = Item;
-export type ItemShowInput = ItemIdInput
+export type ItemShowInput = ItemIdInput;

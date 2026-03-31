@@ -1,5 +1,14 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { adaptRoute } from '@/shared/adapters';
+import { registry } from '@/shared/config/openapi-registry';
+import {
+  EnqueueDelayedExampleBackgroundJobInputSchema,
+  EnqueueExampleBackgroundJobInputSchema,
+  EnqueueRetryDemoJobInputSchema,
+  ExampleBackgroundJobSchedulerIdSchema,
+  UpsertExampleBackgroundJobSchedulerInputSchema,
+} from '../dto';
 import {
   makeEnqueueDelayedExampleBackgroundJobController,
   makeEnqueueExampleBackgroundJobController,
@@ -9,115 +18,126 @@ import {
   makeUpsertExampleBackgroundJobSchedulerController,
 } from '../factories';
 
-/**
- * @swagger
- * tags:
- *   name: JobExamples
- *   description: BullMQ background jobs examples
- */
+const JobSummarySchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    queueName: z.string(),
+  })
+  .openapi('JobSummary');
 
-/**
- * @swagger
- * /job-examples/immediate:
- *   post:
- *     summary: Enqueue an immediate BullMQ job example
- *     tags: [JobExamples]
- *     requestBody:
- *       required: false
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               message:
- *                 type: string
- *                 example: "Run immediate job"
- *     responses:
- *       201:
- *         description: Job enqueued successfully
- *
- * /job-examples/delayed:
- *   post:
- *     summary: Enqueue a delayed BullMQ job example
- *     tags: [JobExamples]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               message:
- *                 type: string
- *               delayMs:
- *                 type: integer
- *                 example: 10000
- *     responses:
- *       201:
- *         description: Delayed job enqueued successfully
- *
- * /job-examples/retry-demo:
- *   post:
- *     summary: Enqueue a retry demo BullMQ job example
- *     tags: [JobExamples]
- *     requestBody:
- *       required: false
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               message:
- *                 type: string
- *               failUntilAttempt:
- *                 type: integer
- *                 example: 2
- *     responses:
- *       201:
- *         description: Retry demo job enqueued successfully
- *
- * /job-examples/schedulers:
- *   get:
- *     summary: List BullMQ job schedulers
- *     tags: [JobExamples]
- *     responses:
- *       200:
- *         description: Scheduler list
- *   post:
- *     summary: Upsert a BullMQ job scheduler
- *     tags: [JobExamples]
- *     requestBody:
- *       required: false
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               schedulerId:
- *                 type: string
- *               everyMs:
- *                 type: integer
- *                 example: 60000
- *               message:
- *                 type: string
- *     responses:
- *       201:
- *         description: Scheduler upserted successfully
- *
- * /job-examples/schedulers/{schedulerId}:
- *   delete:
- *     summary: Remove a BullMQ job scheduler
- *     tags: [JobExamples]
- *     parameters:
- *       - in: path
- *         name: schedulerId
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Scheduler removed successfully
- */
+registry.registerPath({
+  method: 'post',
+  path: '/job-examples/immediate',
+  tags: ['JobExamples'],
+  summary: 'Enqueue an immediate BullMQ job example',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: EnqueueExampleBackgroundJobInputSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: 'Job enqueued successfully',
+      content: { 'application/json': { schema: JobSummarySchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/job-examples/delayed',
+  tags: ['JobExamples'],
+  summary: 'Enqueue a delayed BullMQ job example',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: EnqueueDelayedExampleBackgroundJobInputSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: 'Delayed job enqueued successfully',
+      content: { 'application/json': { schema: JobSummarySchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/job-examples/retry-demo',
+  tags: ['JobExamples'],
+  summary: 'Enqueue a retry demo BullMQ job example',
+  request: {
+    body: {
+      content: {
+        'application/json': { schema: EnqueueRetryDemoJobInputSchema },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: 'Retry demo job enqueued successfully',
+      content: { 'application/json': { schema: JobSummarySchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/job-examples/schedulers',
+  tags: ['JobExamples'],
+  summary: 'List BullMQ job schedulers',
+  responses: {
+    200: {
+      description: 'Scheduler list',
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/job-examples/schedulers',
+  tags: ['JobExamples'],
+  summary: 'Upsert a BullMQ job scheduler',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: UpsertExampleBackgroundJobSchedulerInputSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: 'Scheduler upserted successfully',
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'delete',
+  path: '/job-examples/schedulers/{schedulerId}',
+  tags: ['JobExamples'],
+  summary: 'Remove a BullMQ job scheduler',
+  request: {
+    params: ExampleBackgroundJobSchedulerIdSchema,
+  },
+  responses: {
+    200: {
+      description: 'Scheduler removed successfully',
+    },
+  },
+});
+
 export const exampleJobRouter = Router();
 
 exampleJobRouter.post(

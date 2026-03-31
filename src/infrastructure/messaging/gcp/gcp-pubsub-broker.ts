@@ -1,6 +1,6 @@
-import { Message } from '@google-cloud/pubsub';
+import type { Message } from '@google-cloud/pubsub';
 import Log from '@/shared/logger/log';
-import {
+import type {
   BrokerMessage,
   MessageBroker,
   PublishInput,
@@ -109,7 +109,9 @@ export class GcpPubSubBroker implements MessageBroker {
     });
   }
 
-  private makeBrokerMessage<TPayload>(message: Message): BrokerMessage<TPayload> {
+  private makeBrokerMessage<TPayload>(
+    message: Message
+  ): BrokerMessage<TPayload> {
     return {
       id: message.id,
       payload: this.parsePayload<TPayload>(message.data),

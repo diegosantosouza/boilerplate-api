@@ -1,4 +1,4 @@
-import {
+import type {
   CacheKeyOptions,
   CacheProvider,
   CacheRememberOptions,
@@ -7,6 +7,14 @@ import {
 
 export class NoopCacheProvider implements CacheProvider {
   public async initialize(): Promise<void> {
+    return Promise.resolve();
+  }
+
+  public async ping(): Promise<void> {
+    return Promise.resolve();
+  }
+
+  public async disconnect(): Promise<void> {
     return Promise.resolve();
   }
 
@@ -25,10 +33,7 @@ export class NoopCacheProvider implements CacheProvider {
     return Promise.resolve();
   }
 
-  public async delete(
-    _key: string,
-    _options?: CacheKeyOptions
-  ): Promise<void> {
+  public async delete(_key: string, _options?: CacheKeyOptions): Promise<void> {
     return Promise.resolve();
   }
 

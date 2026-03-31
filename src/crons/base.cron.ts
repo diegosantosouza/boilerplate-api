@@ -10,6 +10,7 @@ abstract class BaseCron {
   public async start(): Promise<void> {
     Log.info(`Starting execution of ${this.cronName} CronJob.`);
 
+    let exitCode = 0;
     try {
       Log.info(`Connecting to MongoDB for ${this.cronName} CronJob.`);
       await MongoHelper.connect(String(env.mongo_uri), env.mongo_debug);
@@ -18,14 +19,18 @@ abstract class BaseCron {
       await this.handle();
 
       Log.info(`Finalized execution of ${this.cronName} CronJob`);
-      await MongoHelper.disconnect();
-      process.exit(0);
+    } catch (error) {
+      Log.error(`${this.cronName} CronJob failed`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      exitCode = 1;
     } finally {
       Log.info(`Disconnecting from MongoDB for ${this.cronName} CronJob.`);
       await MongoHelper.disconnect();
-      Log.info(`MongoDB disconnected successfully for ${this.cronName} CronJob.`);
-
-      process.exit(0);
+      Log.info(
+        `MongoDB disconnected successfully for ${this.cronName} CronJob.`
+      );
+      process.exit(exitCode);
     }
   }
 }

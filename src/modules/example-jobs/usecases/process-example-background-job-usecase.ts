@@ -1,6 +1,6 @@
-import { Job } from 'bullmq';
+import type { Job } from 'bullmq';
 import Log from '@/shared/logger/log';
-import {
+import type {
   ExampleBackgroundJobData,
   ExampleBackgroundJobName,
   ExampleBackgroundJobResult,
@@ -8,11 +8,7 @@ import {
 
 export class ProcessExampleBackgroundJobUseCase {
   public async execute(
-    job: Job<
-      ExampleBackgroundJobData,
-      ExampleBackgroundJobResult,
-      string
-    >
+    job: Job<ExampleBackgroundJobData, ExampleBackgroundJobResult, string>
   ): Promise<ExampleBackgroundJobResult> {
     await job.updateProgress(10);
 

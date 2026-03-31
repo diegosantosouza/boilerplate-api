@@ -1,8 +1,9 @@
-import Log from '@/shared/logger/log';
+import '@/instrumentation';
 import {
   makeExampleBackgroundJobService,
   makeUpsertExampleBackgroundJobSchedulerUseCase,
 } from '@/modules/example-jobs/factories';
+import Log from '@/shared/logger/log';
 
 async function startScheduler(): Promise<void> {
   const exampleBackgroundJobService = makeExampleBackgroundJobService();

@@ -25,7 +25,10 @@ class RedisLockManager {
     }
   }
 
-  public async acquireLock(key: string, ttlSeconds: number = 60): Promise<boolean> {
+  public async acquireLock(
+    key: string,
+    ttlSeconds: number = 60
+  ): Promise<boolean> {
     if (!this.client) return true; // no-op: always grant lock
 
     try {
@@ -35,7 +38,10 @@ class RedisLockManager {
       Log.warn(
         JSON.stringify({
           event: '[RedisLock:acquireLock:error]',
-          data: { key, error: error instanceof Error ? error.message : String(error) },
+          data: {
+            key,
+            error: error instanceof Error ? error.message : String(error),
+          },
         })
       );
       return false;
@@ -51,7 +57,10 @@ class RedisLockManager {
       Log.warn(
         JSON.stringify({
           event: '[RedisLock:releaseLock:error]',
-          data: { key, error: error instanceof Error ? error.message : String(error) },
+          data: {
+            key,
+            error: error instanceof Error ? error.message : String(error),
+          },
         })
       );
     }
@@ -69,7 +78,11 @@ class RedisLockManager {
     }
   }
 
-  public async setRaw(key: string, value: unknown, ttlSeconds?: number): Promise<void> {
+  public async setRaw(
+    key: string,
+    value: unknown,
+    ttlSeconds?: number
+  ): Promise<void> {
     if (!this.client) return;
 
     try {
@@ -83,7 +96,10 @@ class RedisLockManager {
       Log.warn(
         JSON.stringify({
           event: '[RedisLock:setRaw:error]',
-          data: { key, error: error instanceof Error ? error.message : String(error) },
+          data: {
+            key,
+            error: error instanceof Error ? error.message : String(error),
+          },
         })
       );
     }

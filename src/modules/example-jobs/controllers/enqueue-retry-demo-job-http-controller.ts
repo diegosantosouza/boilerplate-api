@@ -1,8 +1,8 @@
-import { Request } from 'express';
+import type { Request } from 'express';
 import { created } from '@/shared/helpers';
-import { HttpResponse } from '@/shared/protocols/http';
+import type { HttpResponse } from '@/shared/protocols/http';
 import { EnqueueRetryDemoJobInputSchema } from '../dto';
-import { EnqueueRetryDemoJobUseCase } from '../usecases';
+import type { EnqueueRetryDemoJobUseCase } from '../usecases';
 
 export class EnqueueRetryDemoJobHttpController {
   constructor(

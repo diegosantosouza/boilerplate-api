@@ -1,8 +1,8 @@
-import { Request } from 'express';
+import type { Request } from 'express';
 import { created } from '@/shared/helpers';
-import { HttpResponse } from '@/shared/protocols/http';
+import type { HttpResponse } from '@/shared/protocols/http';
 import { EnqueueDelayedExampleBackgroundJobInputSchema } from '../dto';
-import { EnqueueDelayedExampleBackgroundJobUseCase } from '../usecases';
+import type { EnqueueDelayedExampleBackgroundJobUseCase } from '../usecases';
 
 export class EnqueueDelayedExampleBackgroundJobHttpController {
   constructor(
@@ -10,10 +10,11 @@ export class EnqueueDelayedExampleBackgroundJobHttpController {
   ) {}
 
   public async handle(req: Request): Promise<HttpResponse> {
-    const parsed = EnqueueDelayedExampleBackgroundJobInputSchema.parse(req.body);
-    const result = await this.enqueueDelayedExampleBackgroundJobUseCase.execute(
-      parsed
+    const parsed = EnqueueDelayedExampleBackgroundJobInputSchema.parse(
+      req.body
     );
+    const result =
+      await this.enqueueDelayedExampleBackgroundJobUseCase.execute(parsed);
     return created(result);
   }
 }

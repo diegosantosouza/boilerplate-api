@@ -1,8 +1,8 @@
-import { Request } from 'express';
+import type { Request } from 'express';
 import { ok } from '@/shared/helpers';
-import { HttpResponse } from '@/shared/protocols/http';
+import type { HttpResponse } from '@/shared/protocols/http';
 import { ExampleBackgroundJobSchedulerIdSchema } from '../dto';
-import { RemoveExampleBackgroundJobSchedulerUseCase } from '../usecases';
+import type { RemoveExampleBackgroundJobSchedulerUseCase } from '../usecases';
 
 export class RemoveExampleBackgroundJobSchedulerHttpController {
   constructor(
@@ -11,9 +11,8 @@ export class RemoveExampleBackgroundJobSchedulerHttpController {
 
   public async handle(req: Request): Promise<HttpResponse> {
     const parsed = ExampleBackgroundJobSchedulerIdSchema.parse(req.params);
-    const result = await this.removeExampleBackgroundJobSchedulerUseCase.execute(
-      parsed
-    );
+    const result =
+      await this.removeExampleBackgroundJobSchedulerUseCase.execute(parsed);
     return ok(result);
   }
 }

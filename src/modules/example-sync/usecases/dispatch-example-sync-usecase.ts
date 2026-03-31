@@ -1,7 +1,7 @@
 import { env } from '@/shared/config/env';
 import Log from '@/shared/logger/log';
-import { MessagePublisher } from '@/shared/messaging';
-import { ExampleSyncResourceRepository } from '@/shared/repository/example-sync-resource-repository';
+import type { MessagePublisher } from '@/shared/messaging';
+import type { ExampleSyncResourceRepository } from '@/shared/repository/example-sync-resource-repository';
 
 export class DispatchExampleSyncUseCase {
   constructor(

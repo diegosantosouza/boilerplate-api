@@ -1,8 +1,8 @@
-import Log from '@/shared/logger/log';
 import { MongoHelper } from '@/infrastructure/database/mongo-helper';
-import { env } from '@/shared/config/env';
 import { makeMessageBroker } from '@/infrastructure/messaging/message-broker-factory';
-import { BrokerMessage } from '@/shared/messaging';
+import { env } from '@/shared/config/env';
+import Log from '@/shared/logger/log';
+import type { BrokerMessage } from '@/shared/messaging';
 
 export interface PubSubMessage {
   data: Buffer;
@@ -54,22 +54,24 @@ export abstract class BaseConsumer {
     try {
       Log.info(
         JSON.stringify({
-          event: `[${this.consumerName}:initialization:start]`,
+          event: `[${BaseConsumer.consumerName}:initialization:start]`,
           data: {
-            message: `Initializing ${this.consumerName}`,
+            message: `Initializing ${BaseConsumer.consumerName}`,
           },
         })
       );
 
       if (!destination) {
-        throw new Error(`Destination is required for ${this.consumerName}`);
+        throw new Error(
+          `Destination is required for ${BaseConsumer.consumerName}`
+        );
       }
 
       const broker = makeMessageBroker();
 
       void broker.subscribe({
         destination,
-        maxMessages: this.maxMessages,
+        maxMessages: BaseConsumer.maxMessages,
         handler: async (message: BrokerMessage) => {
           const startTime = Date.now();
           const messageId = message.id;
@@ -77,7 +79,7 @@ export abstract class BaseConsumer {
           try {
             Log.info(
               JSON.stringify({
-                event: `[${this.consumerName}:consumer:start]`,
+                event: `[${BaseConsumer.consumerName}:consumer:start]`,
                 data: {
                   messageId,
                   message: 'Starting PubSub message processing',
@@ -103,7 +105,7 @@ export abstract class BaseConsumer {
             const processingTime = Date.now() - startTime;
             Log.info(
               JSON.stringify({
-                event: `[${this.consumerName}:consumer:success]`,
+                event: `[${BaseConsumer.consumerName}:consumer:success]`,
                 data: {
                   messageId,
                   processingTimeMs: processingTime,
@@ -115,7 +117,7 @@ export abstract class BaseConsumer {
             const processingTime = Date.now() - startTime;
             Log.error(
               JSON.stringify({
-                event: `[${this.consumerName}:consumer:error]`,
+                event: `[${BaseConsumer.consumerName}:consumer:error]`,
                 data: {
                   messageId,
                   processingTimeMs: processingTime,
@@ -139,27 +141,27 @@ export abstract class BaseConsumer {
 
       Log.info(
         JSON.stringify({
-          event: `[${this.consumerName}:initialization:success]`,
+          event: `[${BaseConsumer.consumerName}:initialization:success]`,
           data: {
             destination,
-            message: `${this.consumerName} broker consumer initialized`,
+            message: `${BaseConsumer.consumerName} broker consumer initialized`,
           },
         })
       );
     } catch (error) {
       Log.error(
         JSON.stringify({
-          event: `[${this.consumerName}:initialization:error]`,
+          event: `[${BaseConsumer.consumerName}:initialization:error]`,
           data: {
             error:
               error instanceof Error
                 ? {
-                  message: error.message,
-                  name: error.name,
-                  stack: error.stack,
-                }
+                    message: error.message,
+                    name: error.name,
+                    stack: error.stack,
+                  }
                 : 'Unknown error',
-            message: `Error initializing ${this.consumerName}`,
+            message: `Error initializing ${BaseConsumer.consumerName}`,
           },
         })
       );
@@ -177,6 +179,9 @@ export abstract class BaseConsumer {
       throw new Error(`${envVarName} environment variable is required`);
     }
 
-    this.createConsumer(destination, this as typeof BaseConsumer);
+    BaseConsumer.createConsumer(
+      destination,
+      BaseConsumer as typeof BaseConsumer
+    );
   }
 }

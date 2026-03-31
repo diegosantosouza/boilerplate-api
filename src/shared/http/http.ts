@@ -1,7 +1,6 @@
-import * as querystring from 'querystring';
 import { HttpMethodEnum } from './http-method-enum';
 import { Request } from './request';
-import { ResponseInterface } from './response-interface';
+import type { ResponseInterface } from './response-interface';
 
 type ParamType = Record<string, string | number | boolean>;
 
@@ -83,7 +82,9 @@ export class Http {
     return this.execute<T>(HttpMethodEnum.PATCH, path, data);
   }
 
-  public async delete<T = unknown>(path: string): Promise<ResponseInterface<T>> {
+  public async delete<T = unknown>(
+    path: string
+  ): Promise<ResponseInterface<T>> {
     return this.execute<T>(HttpMethodEnum.DELETE, path);
   }
 
@@ -101,7 +102,9 @@ export class Http {
   }
 
   private buildParams(): string {
-    const params = this.params.map(param => querystring.stringify(param));
+    const params = this.params.map(param =>
+      new URLSearchParams(param as Record<string, string>).toString()
+    );
     return params.join('&');
   }
 

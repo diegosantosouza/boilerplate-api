@@ -1,5 +1,5 @@
-import { UpsertExampleBackgroundJobSchedulerInput } from '../dto';
-import { ExampleBackgroundJobService } from '../services';
+import type { UpsertExampleBackgroundJobSchedulerInput } from '../dto';
+import type { ExampleBackgroundJobService } from '../services';
 
 export class UpsertExampleBackgroundJobSchedulerUseCase {
   constructor(

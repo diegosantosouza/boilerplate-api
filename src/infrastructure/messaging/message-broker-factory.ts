@@ -1,5 +1,5 @@
 import { env } from '@/shared/config/env';
-import { MessageBroker } from '@/shared/messaging';
+import type { MessageBroker } from '@/shared/messaging';
 import { GcpPubSubBroker } from './gcp/gcp-pubsub-broker';
 
 let brokerInstance: MessageBroker | null = null;

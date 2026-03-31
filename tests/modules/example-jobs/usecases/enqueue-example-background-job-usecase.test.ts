@@ -1,5 +1,5 @@
+import type { ExampleBackgroundJobService } from '@/modules/example-jobs/services/example-background-job-service';
 import { EnqueueExampleBackgroundJobUseCase } from '@/modules/example-jobs/usecases/enqueue-example-background-job-usecase';
-import { ExampleBackgroundJobService } from '@/modules/example-jobs/services/example-background-job-service';
 
 describe('EnqueueExampleBackgroundJobUseCase', () => {
   it('should enqueue an immediate background job', async () => {

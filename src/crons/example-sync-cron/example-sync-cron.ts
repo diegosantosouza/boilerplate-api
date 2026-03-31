@@ -1,6 +1,7 @@
-import BaseCron from '../base.cron';
-import Log from '../../shared/logger/log';
+import '@/instrumentation';
 import { makeDispatchExampleSyncUseCase } from '@/modules/example-sync';
+import Log from '../../shared/logger/log';
+import BaseCron from '../base.cron';
 
 const dispatchExampleSyncUseCase = makeDispatchExampleSyncUseCase();
 
@@ -19,9 +20,12 @@ class ExampleSyncCron extends BaseCron {
 }
 
 const cron = new ExampleSyncCron();
-cron.start()
+cron
+  .start()
   .then(() => process.exit(0))
   .catch(error => {
-    Log.error('Error running ExampleSyncCron', error);
+    Log.error('Error running ExampleSyncCron', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     process.exit(1);
   });

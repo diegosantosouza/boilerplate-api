@@ -1,14 +1,18 @@
-import { Job, QueueEvents, Worker } from 'bullmq';
-import { env } from '@/shared/config/env';
-import Log from '@/shared/logger/log';
-import { makeBullMqConnection, makeBullMqWorkerOptions } from '@/infrastructure/jobs/bullmq-connection';
+import '@/instrumentation';
+import { type Job, QueueEvents, Worker } from 'bullmq';
+import {
+  makeBullMqConnection,
+  makeBullMqWorkerOptions,
+} from '@/infrastructure/jobs/bullmq-connection';
 import {
   EXAMPLE_BACKGROUND_JOBS_QUEUE,
-  ExampleBackgroundJobData,
+  type ExampleBackgroundJobData,
   ExampleBackgroundJobName,
-  ExampleBackgroundJobResult,
+  type ExampleBackgroundJobResult,
 } from '@/modules/example-jobs/entities';
 import { makeProcessExampleBackgroundJobUseCase } from '@/modules/example-jobs/factories/make-process-example-background-job-usecase';
+import { env } from '@/shared/config/env';
+import Log from '@/shared/logger/log';
 
 const processExampleBackgroundJobUseCase =
   makeProcessExampleBackgroundJobUseCase();
@@ -20,11 +24,7 @@ const worker = new Worker<
 >(
   EXAMPLE_BACKGROUND_JOBS_QUEUE,
   async (
-    job: Job<
-      ExampleBackgroundJobData,
-      ExampleBackgroundJobResult,
-      string
-    >
+    job: Job<ExampleBackgroundJobData, ExampleBackgroundJobResult, string>
   ) => processExampleBackgroundJobUseCase.execute(job),
   makeBullMqWorkerOptions(env.bullmq_default_worker_concurrency)
 );

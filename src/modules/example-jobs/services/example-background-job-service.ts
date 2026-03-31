@@ -1,16 +1,16 @@
-import { env } from '@/shared/config/env';
 import {
   closeBullMqResources,
   getBullMqQueue,
 } from '@/infrastructure/jobs/queue-registry';
+import { env } from '@/shared/config/env';
 import {
   DEFAULT_EXAMPLE_SCHEDULER_ID,
   EXAMPLE_BACKGROUND_JOBS_QUEUE,
-  ExampleBackgroundJobData,
+  type ExampleBackgroundJobData,
   ExampleBackgroundJobName,
-  ExampleBackgroundJobResult,
-  ExampleBackgroundJobSummary,
-  ExampleJobSchedulerSummary,
+  type ExampleBackgroundJobResult,
+  type ExampleBackgroundJobSummary,
+  type ExampleJobSchedulerSummary,
 } from '../entities';
 
 type SchedulerInput = {
@@ -87,9 +87,7 @@ export class ExampleBackgroundJobService {
     return this.mapJob(job.id, ExampleBackgroundJobName.RETRY_DEMO);
   }
 
-  public async upsertScheduler(
-    input: SchedulerInput = {}
-  ): Promise<{
+  public async upsertScheduler(input: SchedulerInput = {}): Promise<{
     schedulerId: string;
     queueName: string;
     everyMs: number;
@@ -127,14 +125,10 @@ export class ExampleBackgroundJobService {
     return (schedulers as Array<Record<string, unknown>>).map(scheduler => ({
       id: String(scheduler.id),
       key: String(scheduler.key),
-      next:
-        typeof scheduler.next === 'number' ? scheduler.next : undefined,
-      every:
-        typeof scheduler.every === 'number' ? scheduler.every : undefined,
+      next: typeof scheduler.next === 'number' ? scheduler.next : undefined,
+      every: typeof scheduler.every === 'number' ? scheduler.every : undefined,
       pattern:
-        typeof scheduler.pattern === 'string'
-          ? scheduler.pattern
-          : undefined,
+        typeof scheduler.pattern === 'string' ? scheduler.pattern : undefined,
     }));
   }
 
@@ -154,7 +148,8 @@ export class ExampleBackgroundJobService {
   }
 
   private buildJobData(
-    input: Partial<ExampleBackgroundJobData> & Pick<ExampleBackgroundJobData, 'message'>
+    input: Partial<ExampleBackgroundJobData> &
+      Pick<ExampleBackgroundJobData, 'message'>
   ): ExampleBackgroundJobData {
     return {
       source: input.source ?? 'api',

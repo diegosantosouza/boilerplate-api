@@ -1,5 +1,5 @@
+import type { ExampleBackgroundJobService } from '@/modules/example-jobs/services/example-background-job-service';
 import { UpsertExampleBackgroundJobSchedulerUseCase } from '@/modules/example-jobs/usecases/upsert-example-background-job-scheduler-usecase';
-import { ExampleBackgroundJobService } from '@/modules/example-jobs/services/example-background-job-service';
 
 describe('UpsertExampleBackgroundJobSchedulerUseCase', () => {
   it('should upsert a scheduler through the service', async () => {

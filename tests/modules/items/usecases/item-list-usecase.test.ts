@@ -1,6 +1,6 @@
-import { CacheProvider } from '@/shared/cache';
+import type { ItemRepository } from '@/modules/items/repositories';
 import { ItemListUseCase } from '@/modules/items/usecases';
-import { ItemRepository } from '@/modules/items/repositories';
+import type { CacheProvider } from '@/shared/cache';
 
 describe('ItemListUseCase', () => {
   let usecase: ItemListUseCase;
@@ -47,14 +47,13 @@ describe('ItemListUseCase', () => {
 
     const result = await usecase.execute(input as any);
 
+    expect(result.isOk()).toBe(true);
+    expect(result._unsafeUnwrap()).toEqual(expectedOutput);
     expect(mockCacheProvider.remember).toHaveBeenCalledWith(
       expect.stringContaining('list:'),
       expect.any(Function),
-      {
-        namespace: 'items',
-      }
+      { namespace: 'items' }
     );
     expect(mockRepository.paginate).toHaveBeenCalledWith(input);
-    expect(result).toEqual(expectedOutput);
   });
 });

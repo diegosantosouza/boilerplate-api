@@ -1,10 +1,11 @@
-import { BaseConsumer } from '../base.consumer';
-import { env } from '@/shared/config/env';
-import Log from '@/shared/logger/log';
+import '@/instrumentation';
 import {
-  ExampleSyncMessage,
+  type ExampleSyncMessage,
   makeProcessExampleSyncMessageUseCase,
 } from '@/modules/example-sync';
+import { env } from '@/shared/config/env';
+import Log from '@/shared/logger/log';
+import { BaseConsumer } from '../base.consumer';
 
 const processExampleSyncMessageUseCase = makeProcessExampleSyncMessageUseCase();
 

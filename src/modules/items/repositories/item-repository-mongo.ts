@@ -1,9 +1,9 @@
+import type { PaginateResult } from 'mongoose';
+import type { BaseModel } from '@/shared/models/base-model';
 import { BaseRepository } from '@/shared/repository/repository';
-import { BaseModel } from '@/shared/models/base-model';
-import { ItemInterface, ItemSchema } from '../schemas';
-import { Item } from '../entities';
-import { ItemsListInput } from '../dto';
-import { PaginateResult } from 'mongoose';
+import type { ItemsListInput } from '../dto';
+import type { Item } from '../entities';
+import { type ItemInterface, ItemSchema } from '../schemas';
 
 export class ItemRepository extends BaseRepository<
   ItemInterface,

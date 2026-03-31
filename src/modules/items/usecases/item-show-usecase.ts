@@ -1,11 +1,12 @@
-import { CacheProvider } from '@/shared/cache';
-import { NotFoundError } from '@/shared/errors';
-import { ItemShowInput, ItemShowOutput } from '../dto';
-import { ItemRepository } from '../repositories';
+import { err, ok } from 'neverthrow';
+import type { CacheProvider } from '@/shared/cache';
+import type { DomainResult } from '@/shared/protocols/result';
 import {
   buildItemShowCacheKey,
   ITEMS_CACHE_NAMESPACE,
 } from '../constants/cache';
+import type { ItemShowInput, ItemShowOutput } from '../dto';
+import type { ItemRepository } from '../repositories';
 
 export class ItemShowUseCase {
   constructor(
@@ -13,20 +14,24 @@ export class ItemShowUseCase {
     private readonly cacheProvider: CacheProvider
   ) {}
 
-  async execute(input: ItemShowUseCase.Input): Promise<ItemShowUseCase.Output> {
-    return this.cacheProvider.remember(
+  async execute(
+    input: ItemShowUseCase.Input
+  ): Promise<DomainResult<ItemShowUseCase.Output>> {
+    const item = await this.cacheProvider.remember(
       buildItemShowCacheKey(input.id),
-      async () => {
-        const item = await this.itemRepository.findById(input.id);
-        if (!item) {
-          throw new NotFoundError('Item not found');
-        }
-        return item;
-      },
-      {
-        namespace: ITEMS_CACHE_NAMESPACE,
-      }
+      async () => this.itemRepository.findById(input.id),
+      { namespace: ITEMS_CACHE_NAMESPACE }
     );
+
+    if (!item) {
+      return err({
+        type: 'NOT_FOUND',
+        message: 'Item not found',
+        resource: 'Item',
+      });
+    }
+
+    return ok(item);
   }
 }
 

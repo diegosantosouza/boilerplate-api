@@ -1,6 +1,6 @@
-import { CacheProvider } from '@/shared/cache';
+import type { ItemRepository } from '@/modules/items/repositories';
 import { ItemUpdateUseCase } from '@/modules/items/usecases';
-import { ItemRepository } from '@/modules/items/repositories';
+import type { CacheProvider } from '@/shared/cache';
 
 describe('ItemUpdateUseCase', () => {
   let usecase: ItemUpdateUseCase;
@@ -26,7 +26,7 @@ describe('ItemUpdateUseCase', () => {
     usecase = new ItemUpdateUseCase(mockRepository, mockCacheProvider);
   });
 
-  it('should invalidate the items namespace after a successful update', async () => {
+  it('should update an item and invalidate cache', async () => {
     const input = {
       id: 'item-1',
       name: 'Updated chair',
@@ -41,8 +41,30 @@ describe('ItemUpdateUseCase', () => {
 
     const result = await usecase.execute(input as any);
 
+    expect(result.isOk()).toBe(true);
+    expect(result._unsafeUnwrap()).toEqual(updatedItem);
     expect(mockRepository.update).toHaveBeenCalledWith('item-1', input);
-    expect(mockCacheProvider.refreshNamespaceToken).toHaveBeenCalledWith('items');
-    expect(result).toEqual(updatedItem);
+    expect(mockCacheProvider.refreshNamespaceToken).toHaveBeenCalledWith(
+      'items'
+    );
+  });
+
+  it('should return NOT_FOUND error when item does not exist', async () => {
+    mockRepository.findById.mockResolvedValue(null);
+
+    const result = await usecase.execute({ id: 'missing' } as any);
+
+    expect(result.isErr()).toBe(true);
+    expect(result._unsafeUnwrapErr().type).toBe('NOT_FOUND');
+  });
+
+  it('should return INTERNAL error when update operation fails', async () => {
+    mockRepository.findById.mockResolvedValue({ id: 'item-1' } as any);
+    mockRepository.update.mockResolvedValue(null);
+
+    const result = await usecase.execute({ id: 'item-1', name: 'test' } as any);
+
+    expect(result.isErr()).toBe(true);
+    expect(result._unsafeUnwrapErr().type).toBe('INTERNAL');
   });
 });

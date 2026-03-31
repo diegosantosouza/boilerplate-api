@@ -1,4 +1,5 @@
-import mongoose, { Mongoose } from 'mongoose';
+import mongoose, { type Mongoose } from 'mongoose';
+import Log from '@/shared/logger/log';
 import { env } from '../../shared/config/env';
 
 export class MongoHelper {
@@ -8,28 +9,43 @@ export class MongoHelper {
     uri: string = env.mongo_uri,
     debug: boolean = false
   ): Promise<void> {
-    if (!this.connection) {
+    if (!MongoHelper.connection) {
       try {
         mongoose.set('debug', debug);
-        this.connection = await mongoose.connect(uri);
-        console.log('MongoDb connected successfully');
+        MongoHelper.connection = await mongoose.connect(uri);
+        Log.info('MongoDb connected successfully');
       } catch (error) {
-        console.error('MongoDb connection Error', error);
+        Log.error('MongoDb connection Error', {
+          error: error instanceof Error ? error.message : String(error),
+        });
         throw error;
       }
     }
   }
 
   static async disconnect(): Promise<void> {
-    if (this.connection) {
+    if (MongoHelper.connection) {
       try {
-        await this.connection.disconnect();
-        this.connection = null;
-        console.debug('MongoDb disconnected');
+        await MongoHelper.connection.disconnect();
+        MongoHelper.connection = null;
+        Log.debug('MongoDb disconnected');
       } catch (error) {
-        console.error('MongoDb disconnect Error', error);
+        Log.error('MongoDb disconnect Error', {
+          error: error instanceof Error ? error.message : String(error),
+        });
         throw error;
       }
     }
+  }
+
+  static async ping(): Promise<void> {
+    if (!MongoHelper.connection) {
+      throw new Error('MongoDB not connected');
+    }
+    const db = MongoHelper.connection.connection.db;
+    if (!db) {
+      throw new Error('MongoDB database instance not available');
+    }
+    await db.admin().ping();
   }
 }

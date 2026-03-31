@@ -1,7 +1,7 @@
-import { RedisOptions } from 'ioredis';
-import { JobsOptions, QueueOptions, WorkerOptions } from 'bullmq';
+import type { JobsOptions, QueueOptions, WorkerOptions } from 'bullmq';
+import type { RedisOptions } from 'ioredis';
+import { URL } from 'url';
 import { env } from '@/shared/config/env';
-import { URL } from 'url'
 
 const parseRedisDatabase = (pathname: string): number => {
   const database = pathname.replace('/', '');

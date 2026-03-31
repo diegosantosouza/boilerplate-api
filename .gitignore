@@ -5,6 +5,7 @@
 
 # Tests
 /coverage
+.test-env.json
 .npmrc
 
 # Dev tools
@@ -13,3 +14,5 @@ CLAUDE.md
 .clauderc
 
 swagger.json
+
+.roadmap

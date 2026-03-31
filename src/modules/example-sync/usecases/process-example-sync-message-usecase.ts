@@ -1,5 +1,5 @@
 import Log from '@/shared/logger/log';
-import { ExampleSyncMessage } from '../types/example-sync-resource';
+import type { ExampleSyncMessage } from '../types/example-sync-resource';
 
 export class ProcessExampleSyncMessageUseCase {
   public async execute(input: ExampleSyncMessage): Promise<void> {

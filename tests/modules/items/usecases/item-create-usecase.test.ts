@@ -1,6 +1,6 @@
-import { CacheProvider } from '@/shared/cache';
+import type { ItemRepository } from '@/modules/items/repositories';
 import { ItemCreateUseCase } from '@/modules/items/usecases';
-import { ItemRepository } from '@/modules/items/repositories';
+import type { CacheProvider } from '@/shared/cache';
 
 describe('ItemCreateUseCase', () => {
   let usecase: ItemCreateUseCase;
@@ -27,7 +27,7 @@ describe('ItemCreateUseCase', () => {
     const input = {
       name: 'Test Item',
       description: 'A test item description',
-      price: 99.90,
+      price: 99.9,
       active: true,
       category: 'electronics',
     };
@@ -43,9 +43,12 @@ describe('ItemCreateUseCase', () => {
 
     const result = await usecase.execute(input);
 
+    expect(result.isOk()).toBe(true);
+    expect(result._unsafeUnwrap()).toEqual(expectedOutput);
     expect(mockRepository.create).toHaveBeenCalledWith(input);
-    expect(mockCacheProvider.refreshNamespaceToken).toHaveBeenCalledWith('items');
-    expect(result).toEqual(expectedOutput);
+    expect(mockCacheProvider.refreshNamespaceToken).toHaveBeenCalledWith(
+      'items'
+    );
   });
 
   it('should create an item with default active=true', async () => {
@@ -59,9 +62,12 @@ describe('ItemCreateUseCase', () => {
 
     mockRepository.create.mockResolvedValue({ ...input, id: '123' } as any);
 
-    await usecase.execute(input);
+    const result = await usecase.execute(input);
 
+    expect(result.isOk()).toBe(true);
     expect(mockRepository.create).toHaveBeenCalledWith(input);
-    expect(mockCacheProvider.refreshNamespaceToken).toHaveBeenCalledWith('items');
+    expect(mockCacheProvider.refreshNamespaceToken).toHaveBeenCalledWith(
+      'items'
+    );
   });
 });

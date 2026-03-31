@@ -1,8 +1,8 @@
-import {
+import type {
   EnqueueExampleBackgroundJobInput,
   EnqueueExampleBackgroundJobOutput,
 } from '../dto';
-import { ExampleBackgroundJobService } from '../services';
+import type { ExampleBackgroundJobService } from '../services';
 
 export class EnqueueExampleBackgroundJobUseCase {
   constructor(

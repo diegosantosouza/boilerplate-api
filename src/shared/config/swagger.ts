@@ -1,38 +1,13 @@
 import fs from 'fs';
 import path from 'path';
-import swaggerJsdoc from 'swagger-jsdoc';
+import Log from '@/shared/logger/log';
 
-export const options: swaggerJsdoc.Options = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Boilerplate API',
-      version: '1.0.0',
-      description: 'API Documentation',
-    },
-    servers: [
-      {
-        url: 'http://localhost:3000',
-        description: 'Local Server',
-      },
-    ],
-    components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
-        },
-      },
-    },
-    security: [
-      {
-        bearerAuth: [],
-      },
-    ],
-  },
-  apis: ['./src/router/*.ts', './src/modules/**/*.ts'],
-};
+// Import all entrypoints to trigger registry.registerPath() calls
+import '@/modules/items/entrypoints/item-http-entrypoint';
+import '@/modules/example-jobs/entrypoints/example-job-http-entrypoint';
+import '@/router/healthcheck';
+
+import { generateOpenAPIDocument } from './openapi-registry';
 
 let spec: object;
 
@@ -41,17 +16,21 @@ if (process.env.NODE_ENV !== 'development') {
   if (fs.existsSync(swaggerPath)) {
     try {
       spec = JSON.parse(fs.readFileSync(swaggerPath, 'utf8'));
-      console.log('Loaded static Swagger JSON');
+      Log.info('Loaded static Swagger JSON');
     } catch (error) {
-      console.error('Failed to load static Swagger JSON:', error);
-      spec = swaggerJsdoc(options);
+      Log.error('Failed to load static Swagger JSON', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      spec = generateOpenAPIDocument();
     }
   } else {
-    console.warn('Swagger JSON not found in production. Falling back to dynamic generation.');
-    spec = swaggerJsdoc(options);
+    Log.warn(
+      'Swagger JSON not found in production. Falling back to dynamic generation.'
+    );
+    spec = generateOpenAPIDocument();
   }
 } else {
-  spec = swaggerJsdoc(options);
+  spec = generateOpenAPIDocument();
 }
 
 export const swaggerSpec = spec;

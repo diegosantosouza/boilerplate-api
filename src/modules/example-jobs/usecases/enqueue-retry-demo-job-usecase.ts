@@ -1,8 +1,8 @@
-import {
+import type {
   EnqueueRetryDemoJobInput,
   EnqueueRetryDemoJobOutput,
 } from '../dto';
-import { ExampleBackgroundJobService } from '../services';
+import type { ExampleBackgroundJobService } from '../services';
 
 export class EnqueueRetryDemoJobUseCase {
   constructor(

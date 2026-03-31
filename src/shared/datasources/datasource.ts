@@ -1,4 +1,4 @@
-import { HttpMethodEnum, Request, ResponseInterface } from '@/shared/http';
+import { HttpMethodEnum, Request, type ResponseInterface } from '@/shared/http';
 
 export abstract class DataSource {
   protected readonly requestService = new Request();
@@ -41,7 +41,9 @@ export abstract class DataSource {
     return this;
   }
 
-  public async get<T = unknown>(endpoint: string): Promise<ResponseInterface<T>> {
+  public async get<T = unknown>(
+    endpoint: string
+  ): Promise<ResponseInterface<T>> {
     return this.execute<T>(HttpMethodEnum.GET, endpoint);
   }
 

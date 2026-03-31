@@ -1,5 +1,5 @@
-import { RemoveExampleBackgroundJobSchedulerInput } from '../dto';
-import { ExampleBackgroundJobService } from '../services';
+import type { RemoveExampleBackgroundJobSchedulerInput } from '../dto';
+import type { ExampleBackgroundJobService } from '../services';
 
 export class RemoveExampleBackgroundJobSchedulerUseCase {
   constructor(

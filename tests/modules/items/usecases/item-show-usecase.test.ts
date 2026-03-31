@@ -1,7 +1,6 @@
-import { CacheProvider } from '@/shared/cache';
-import { NotFoundError } from '@/shared/errors';
+import type { ItemRepository } from '@/modules/items/repositories';
 import { ItemShowUseCase } from '@/modules/items/usecases';
-import { ItemRepository } from '@/modules/items/repositories';
+import type { CacheProvider } from '@/shared/cache';
 
 describe('ItemShowUseCase', () => {
   let usecase: ItemShowUseCase;
@@ -39,25 +38,25 @@ describe('ItemShowUseCase', () => {
 
     const result = await usecase.execute({ id: 'item-1' });
 
+    expect(result.isOk()).toBe(true);
+    expect(result._unsafeUnwrap()).toEqual(expectedOutput);
     expect(mockCacheProvider.remember).toHaveBeenCalledWith(
       'show:item-1',
       expect.any(Function),
-      {
-        namespace: 'items',
-      }
+      { namespace: 'items' }
     );
     expect(mockRepository.findById).toHaveBeenCalledWith('item-1');
-    expect(result).toEqual(expectedOutput);
   });
 
-  it('should throw when the item does not exist', async () => {
+  it('should return NOT_FOUND error when the item does not exist', async () => {
     mockCacheProvider.remember.mockImplementation(async (_key, resolver) =>
       resolver()
     );
     mockRepository.findById.mockResolvedValue(null);
 
-    await expect(usecase.execute({ id: 'missing-item' })).rejects.toThrow(
-      NotFoundError
-    );
+    const result = await usecase.execute({ id: 'missing-item' });
+
+    expect(result.isErr()).toBe(true);
+    expect(result._unsafeUnwrapErr().type).toBe('NOT_FOUND');
   });
 });

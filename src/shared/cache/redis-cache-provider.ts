@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
-import Redis from 'ioredis';
+import type Redis from 'ioredis';
 import Log from '@/shared/logger/log';
-import {
+import type {
   CacheKeyOptions,
   CacheProvider,
   CacheRememberOptions,
@@ -21,6 +21,14 @@ export class RedisCacheProvider implements CacheProvider {
 
   public async initialize(): Promise<void> {
     await this.client.ping();
+  }
+
+  public async ping(): Promise<void> {
+    await this.client.ping();
+  }
+
+  public async disconnect(): Promise<void> {
+    await this.client.quit();
   }
 
   public async get<T>(
@@ -61,10 +69,7 @@ export class RedisCacheProvider implements CacheProvider {
     }
   }
 
-  public async delete(
-    key: string,
-    options?: CacheKeyOptions
-  ): Promise<void> {
+  public async delete(key: string, options?: CacheKeyOptions): Promise<void> {
     try {
       const cacheKey = await this.buildKey(key, options);
       await this.client.del(cacheKey);

@@ -16,6 +16,8 @@ export interface CacheRememberOptions extends CacheSetOptions {}
 
 export interface CacheProvider {
   initialize(): Promise<void>;
+  disconnect(): Promise<void>;
+  ping(): Promise<void>;
   get<T>(key: string, options?: CacheKeyOptions): Promise<T | null>;
   set(key: string, value: unknown, options?: CacheSetOptions): Promise<void>;
   delete(key: string, options?: CacheKeyOptions): Promise<void>;
@@ -77,6 +79,14 @@ class CacheManager implements CacheProvider {
     }
   }
 
+  public async disconnect(): Promise<void> {
+    await this.provider.disconnect();
+  }
+
+  public async ping(): Promise<void> {
+    await this.provider.ping();
+  }
+
   public async get<T>(
     key: string,
     options?: CacheKeyOptions
@@ -92,10 +102,7 @@ class CacheManager implements CacheProvider {
     return this.provider.set(key, value, options);
   }
 
-  public async delete(
-    key: string,
-    options?: CacheKeyOptions
-  ): Promise<void> {
+  public async delete(key: string, options?: CacheKeyOptions): Promise<void> {
     return this.provider.delete(key, options);
   }
 
@@ -120,15 +127,23 @@ export class Cache {
   private static instance: CacheManager = new CacheManager();
 
   public static getInstance(): CacheProvider {
-    return this.instance;
+    return Cache.instance;
   }
 
   public static async initialize(): Promise<CacheProvider> {
-    await this.instance.initialize();
-    return this.instance;
+    await Cache.instance.initialize();
+    return Cache.instance;
+  }
+
+  public static async disconnect(): Promise<void> {
+    await Cache.instance.disconnect();
+  }
+
+  public static async ping(): Promise<void> {
+    await Cache.instance.ping();
   }
 
   public static reset(): void {
-    this.instance = new CacheManager();
+    Cache.instance = new CacheManager();
   }
 }

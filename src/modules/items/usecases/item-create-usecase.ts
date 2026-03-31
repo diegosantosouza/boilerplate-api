@@ -1,7 +1,11 @@
-import { CacheProvider } from '@/shared/cache';
-import { ItemRepository } from '../repositories';
-import { ItemCreateInput, ItemCreateOutput } from '../dto';
+import { ok } from 'neverthrow';
+import type { CacheProvider } from '@/shared/cache';
+import { eventBus } from '@/shared/events';
+import type { DomainResult } from '@/shared/protocols/result';
 import { ITEMS_CACHE_NAMESPACE } from '../constants/cache';
+import type { ItemCreateInput, ItemCreateOutput } from '../dto';
+import { ItemEvents } from '../events/item-events';
+import type { ItemRepository } from '../repositories';
 
 export class ItemCreateUseCase {
   constructor(
@@ -11,10 +15,15 @@ export class ItemCreateUseCase {
 
   async execute(
     input: ItemCreateUseCase.Input
-  ): Promise<ItemCreateUseCase.Output> {
+  ): Promise<DomainResult<ItemCreateUseCase.Output>> {
     const item = await this.itemRepository.create(input);
     await this.cacheProvider.refreshNamespaceToken(ITEMS_CACHE_NAMESPACE);
-    return item;
+    eventBus.publish({
+      name: ItemEvents.CREATED,
+      payload: item,
+      occurredAt: new Date(),
+    });
+    return ok(item);
   }
 }
 

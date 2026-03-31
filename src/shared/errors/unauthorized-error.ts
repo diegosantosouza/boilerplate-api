@@ -1,8 +1,8 @@
 export class UnauthorizedError extends Error {
-  status: number
+  status: number;
   constructor() {
-    super('Unauthorized')
-    this.name = 'UnauthorizedError'
-    this.status = 401
+    super('Unauthorized');
+    this.name = 'UnauthorizedError';
+    this.status = 401;
   }
 }

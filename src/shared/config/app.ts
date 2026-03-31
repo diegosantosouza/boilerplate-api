@@ -1,11 +1,14 @@
-import express, { json } from 'express';
 import cors from 'cors';
-import { mainRouter } from '@/router';
+import express, { json } from 'express';
+import pinoHttp from 'pino-http';
+import { register } from 'prom-client';
 import swaggerUi from 'swagger-ui-express';
-import { swaggerSpec } from './swagger';
+import { mainRouter } from '@/router';
 import { errorHandlerMiddleware } from '../adapters';
-import { morganFormat } from '../logger/morgan-log';
-import morgan = require('morgan')
+import { PinoAuditLogger } from '../audit/pino-audit-logger';
+import { pinoInstance } from '../logger/log';
+import { createAuditMiddleware } from '../middlewares/audit.middleware';
+import { swaggerSpec } from './swagger';
 
 class App {
   public express = express();
@@ -23,15 +26,24 @@ class App {
   private middlewares(): void {
     this.express.use(cors());
     this.express.use(json());
-    this.express.use(morgan(morganFormat));
+    this.express.use(pinoHttp({ logger: pinoInstance }));
+    this.express.use(createAuditMiddleware(new PinoAuditLogger()));
   }
 
   private routes(): void {
+    this.express.get('/metrics', async (_req, res) => {
+      res.setHeader('Content-Type', register.contentType);
+      res.send(await register.metrics());
+    });
     this.express.get('/api-docs.json', (req, res) => {
       res.setHeader('Content-Type', 'application/json');
       res.send(swaggerSpec);
     });
-    this.express.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+    this.express.use(
+      '/api-docs',
+      swaggerUi.serve,
+      swaggerUi.setup(swaggerSpec)
+    );
     this.express.use(mainRouter);
   }
 

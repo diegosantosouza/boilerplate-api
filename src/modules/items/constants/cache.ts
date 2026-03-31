@@ -1,5 +1,5 @@
-import { ItemsListInput } from '../dto';
 import { buildCacheKey } from '@/shared/cache';
+import type { ItemsListInput } from '../dto';
 
 export const ITEMS_CACHE_NAMESPACE = 'items';
 
