@@ -9,8 +9,7 @@ let redisContainer: StartedTestContainer;
 
 export async function setupContainers() {
   mongoContainer = await new MongoDBContainer('mongo:7').start();
-  process.env.MONGO_URI =
-    mongoContainer.getConnectionString() + '/test-db?directConnection=true';
+  process.env.MONGO_URI = `${mongoContainer.getConnectionString()}/test-db?directConnection=true`;
 
   redisContainer = await new GenericContainer('redis:alpine')
     .withExposedPorts(6379)

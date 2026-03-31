@@ -54,7 +54,7 @@ healthcheckRouter.get('/healthcheck', async (_req, res) => {
     checks.redis = 'DOWN';
   }
 
-  const allUp = Object.values(checks).every((s) => s === 'UP');
+  const allUp = Object.values(checks).every(s => s === 'UP');
 
   res.status(allUp ? 200 : 503).json({
     status: allUp ? 'OK' : 'DEGRADED',

@@ -32,7 +32,7 @@ export const jwtAuthMiddleware = (
 ): void => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!authHeader?.startsWith('Bearer ')) {
     res.status(401).json({ message: 'Unauthorized' });
     return;
   }

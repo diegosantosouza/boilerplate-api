@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import Log from '@/shared/logger/log';
 
 // Import all entrypoints to trigger registry.registerPath() calls

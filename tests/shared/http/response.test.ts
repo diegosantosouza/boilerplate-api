@@ -1,5 +1,5 @@
 import { RequestException } from '@/shared/http';
-import { Response, type RawResponse } from '@/shared/http/response';
+import { type RawResponse, Response } from '@/shared/http/response';
 
 const makeRawResponse = (statusCode: number, data: unknown): RawResponse => ({
   statusCode,

@@ -11,7 +11,7 @@ export class ExampleSyncResourceRepository extends DefaultExternalCrudRepository
   protected dataSource: ExampleSyncDatasource;
   protected endpoint: string;
 
-  constructor(private readonly exampleSyncDatasource: ExampleSyncDatasource) {
+  constructor(readonly exampleSyncDatasource: ExampleSyncDatasource) {
     super();
     this.dataSource = exampleSyncDatasource;
     this.endpoint = '/';

@@ -1,5 +1,5 @@
-import { unlinkSync } from 'fs';
-import path from 'path';
+import { unlinkSync } from 'node:fs';
+import path from 'node:path';
 import { teardownContainers } from './setup-containers';
 
 export default async function globalTeardown() {

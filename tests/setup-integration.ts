@@ -1,5 +1,5 @@
-import { readFileSync } from 'fs';
-import path from 'path';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 
 const envPath = path.join(__dirname, '.test-env.json');
 const testEnv = JSON.parse(readFileSync(envPath, 'utf-8'));

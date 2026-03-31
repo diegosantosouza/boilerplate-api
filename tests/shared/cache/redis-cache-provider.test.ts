@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 import { RedisCacheProvider } from '@/shared/cache';
 
 jest.mock('crypto', () => ({

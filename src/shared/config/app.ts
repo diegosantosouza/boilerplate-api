@@ -35,7 +35,7 @@ class App {
       res.setHeader('Content-Type', register.contentType);
       res.send(await register.metrics());
     });
-    this.express.get('/api-docs.json', (req, res) => {
+    this.express.get('/api-docs.json', (_req, res) => {
       res.setHeader('Content-Type', 'application/json');
       res.send(swaggerSpec);
     });

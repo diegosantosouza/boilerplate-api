@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 // Import all entrypoints to trigger registry.registerPath() calls
 import '@/modules/items/entrypoints/item-http-entrypoint';

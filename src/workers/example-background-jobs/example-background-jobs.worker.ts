@@ -7,7 +7,6 @@ import {
 import {
   EXAMPLE_BACKGROUND_JOBS_QUEUE,
   type ExampleBackgroundJobData,
-  ExampleBackgroundJobName,
   type ExampleBackgroundJobResult,
 } from '@/modules/example-jobs/entities';
 import { makeProcessExampleBackgroundJobUseCase } from '@/modules/example-jobs/factories/make-process-example-background-job-usecase';

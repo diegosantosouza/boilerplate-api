@@ -15,7 +15,7 @@ class ExampleSyncConsumer extends BaseConsumer {
   protected static async onMessage(
     payload: unknown,
     messageId: string,
-    attributes: Record<string, string>
+    _attributes: Record<string, string>
   ): Promise<void> {
     const messageData = payload as ExampleSyncMessage;
 

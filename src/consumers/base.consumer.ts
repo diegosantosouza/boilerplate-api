@@ -15,9 +15,9 @@ export abstract class BaseConsumer {
   protected static maxMessages: number = 10;
 
   protected static onMessage(
-    payload: unknown,
-    messageId: string,
-    attributes: Record<string, string>
+    _payload: unknown,
+    _messageId: string,
+    _attributes: Record<string, string>
   ): Promise<void> {
     throw new Error('onMessage must be implemented by subclass');
   }

@@ -34,8 +34,8 @@ export class LocalEventBus implements DomainEventBus {
       this.handlerMap.set(eventName, new Map());
     }
     this.handlerMap
-      .get(eventName)!
-      .set(handler as EventHandler, wrappedHandler);
+      .get(eventName)
+      ?.set(handler as EventHandler, wrappedHandler);
     this.emitter.on(eventName, wrappedHandler);
   }
 
